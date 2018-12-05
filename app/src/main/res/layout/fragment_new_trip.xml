@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/distanceTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="86dp"
+            android:text="00.00"
+            android:gravity="center_vertical|center_horizontal"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="32dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textSize="64sp"
+            android:textAlignment="center"
+            android:layout_marginBottom="89dp"
+            app:layout_constraintBottom_toTopOf="@+id/distanceDivider"/>
+
+
+    <TextView
+            android:id="@+id/distanceLabel"
+            android:text="Avstånd (KM)"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/distanceDivider"
+            style="@style/textUnit"/>
+
+    <View
+            android:id="@+id/distanceDivider"
+            android:layout_width="200dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/distanceTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            style="@style/divider"/>
+
+    <TextView
+            android:id="@+id/durationTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00:00"
+            android:gravity="center_vertical|center_horizontal"
+            app:layout_constraintStart_toStartOf="@+id/durationDivider"
+            app:layout_constraintEnd_toEndOf="@+id/durationDivider"
+            android:textSize="36sp"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@+id/distanceLabel"
+            android:layout_marginTop="32dp"/>
+
+    <View
+            android:id="@+id/durationDivider"
+            android:layout_width="120dp"
+            app:layout_constraintEnd_toStartOf="@+id/speedDivider"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/durationTextView"
+            style="@style/divider"/>
+
+    <TextView
+            android:id="@+id/durationLabel"
+            android:text="Tid (HH:MM:SS)"
+            app:layout_constraintTop_toBottomOf="@+id/durationDivider"
+            app:layout_constraintStart_toStartOf="@+id/durationDivider"
+            app:layout_constraintEnd_toEndOf="@+id/durationDivider"
+            style="@style/textUnit"/>
+
+    <TextView
+            android:id="@+id/speedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00.0"
+            android:gravity="center_vertical|center_horizontal"
+            app:layout_constraintStart_toStartOf="@+id/speedDivider"
+            app:layout_constraintEnd_toEndOf="@+id/speedDivider"
+            android:textSize="36sp"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@+id/distanceLabel"
+            android:layout_marginTop="32dp"/>
+
+    <View
+            android:id="@+id/speedDivider"
+            android:layout_width="120dp"
+            app:layout_constraintStart_toEndOf="@+id/durationDivider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/speedTextView"
+            style="@style/divider"/>
+
+    <TextView
+            android:id="@+id/speedLabel"
+            android:text="Hast. (KM/H)"
+            app:layout_constraintTop_toBottomOf="@+id/speedDivider"
+            app:layout_constraintStart_toStartOf="@+id/speedDivider"
+            app:layout_constraintEnd_toEndOf="@+id/speedDivider"
+            style="@style/textUnit"/>
+
+    <Button
+            android:id="@+id/startButton"
+            android:layout_gravity="center"
+            android:text="Starta resa"
+            android:layout_height="64dp"
+            android:layout_width="160dp"
+            android:drawableStart="@drawable/ic_play_circle_outline"
+            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/resetButton"
+            app:layout_constraintHorizontal_bias="0.504"/>
+
+    <Button
+            android:id="@+id/resetButton"
+            android:layout_gravity="center"
+            android:text="Reset"
+            android:layout_height="32dp"
+            android:layout_width="160dp"
+            android:background="@null"
+            android:enabled="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="24dp"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ÅFs körjournal</string>
+    <string name="app_name_short">Körjournal</string>
+
+    <string name="action_settings">Inställningar</string>
+    <string name="action_map">Karta</string>
+
+    <string name="title_new_trip">Ny resa</string>
+    <string name="title_previous_trips">Logg</string>
+</resources>
