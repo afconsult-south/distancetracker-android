@@ -12,6 +12,9 @@ interface TripsDataDao {
     @Query("SELECT * from trips")
     fun getAll(): List<TripsData>
 
+    @Query("SELECT * from trips WHERE id = :rowId")
+    fun getTrip(rowId : Long): TripsData
+
     @Insert(onConflict = REPLACE)
     fun insert(tripsData: TripsData)
 

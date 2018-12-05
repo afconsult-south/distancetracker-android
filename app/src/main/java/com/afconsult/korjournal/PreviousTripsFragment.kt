@@ -9,14 +9,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.afconsult.korjournal.database.TripsData
 import kotlinx.android.synthetic.main.fragment_previous_trips.*
 
-class PreviousTripsFragment : Fragment() {
+class PreviousTripsFragment : Fragment(), TripAdapter.OnTripClickListener {
 
     private val mUiHandler = Handler()
-
-    // Initializing an empty ArrayList to be filled with animals
-    val animals: ArrayList<String> = ArrayList()
 
 //    val mDb = (activity as? MainActivity).mDb
 //    var mDbWorkerThread = (activity as MainActivity)!!.mDbWorkerThread?
@@ -31,57 +29,30 @@ class PreviousTripsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Loads companies into the ArrayList
-        addCompanies()
-
         // Creates a vertical Layout Manager
         recyclerView.layoutManager = LinearLayoutManager(activity)
-
-        // You can use GridLayoutManager if you want multiple columns. Enter the number of columns as a parameter.
-//        rv_animal_list.layoutManager = GridLayoutManager(this, 2)
-
-        // Access the RecyclerView Adapter and load the data into it
-//        recyclerView.adapter = TripAdapter(animals, activity)
-
         recyclerView.addItemDecoration(DividerItemDecoration(activity, LinearLayoutManager.VERTICAL))
 
         fetchTripsDataFromDb()
-
     }
 
-    fun fetchTripsDataFromDb() {
+    private fun fetchTripsDataFromDb() {
         val task = Runnable {
             val tripsData = (activity as? MainActivity)!!.mDb?.tripsDataDao()?.getAll()
-            mUiHandler.post({
-                if (tripsData == null || tripsData?.size == 0) {
+            mUiHandler.post {
+                if (tripsData == null || tripsData.size == 0) {
                     Toast.makeText(context, "Database empty!!", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, "Items in db: ${tripsData.size}", Toast.LENGTH_SHORT).show()
-                    recyclerView.adapter = TripAdapter(tripsData, activity)
-//                    bindDataWithUi(tripsData = tripsData?.get(0))
+                    recyclerView.adapter = TripAdapter(tripsData, activity, this as TripAdapter.OnTripClickListener)
                 }
-            })
+            }
         }
-        (activity as? MainActivity)!!.mDbWorkerThread?.postTask(task)
+        (activity as? MainActivity)!!.mDbWorkerThread.postTask(task)
     }
 
-    //    private fun bindDataWithUi(weatherData: WeatherData?) {
-//        mTempInC.text = weatherData?.tempInC.toString()
-//        mTempInF.text = weatherData?.tempInF.toString()
-//        mLatitude.text = weatherData?.lat.toString()
-//        mLongitude.text = weatherData?.lon.toString()
-//        mName.text = weatherData?.name
-//        mRegion.text = weatherData?.region
-//    }
-
-    fun addCompanies() {
-        animals.add("Tetra Pak")
-        animals.add("Eon")
-        animals.add("Apple")
-        animals.add("Sony")
-        animals.add("Pågen")
-        animals.add("ÅF Solna")
-        animals.add("Volvo")
-        animals.add("P7")
+    override fun onTripClick(trip: TripsData) {
+        Toast.makeText(context, trip.departure + " " + trip.destination,  Toast.LENGTH_LONG).show()
     }
+
 }

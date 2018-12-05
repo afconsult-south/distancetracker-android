@@ -34,16 +34,3 @@ abstract class TripsDataBase : RoomDatabase() {
         }
     }
 }
-
-object DateConverter {
-
-    @TypeConverter
-    fun toDate(timestamp: Long?): Date? {
-        return if (timestamp == null) null else Date(timestamp)
-    }
-
-    @TypeConverter
-    fun toTimestamp(date: Date?): Long? {
-        return (if (date == null) null else date.getTime())!!.toLong()
-    }
-}

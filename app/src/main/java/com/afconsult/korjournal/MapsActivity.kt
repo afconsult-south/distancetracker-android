@@ -28,6 +28,7 @@ import com.google.android.gms.maps.model.LatLng
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
     val PERMISSIONS_REQUEST_ALL = 1
     private lateinit var mMap: GoogleMap
+    private var mPolyline : Polyline? = null
 
     private lateinit var mo : MarkerOptions
     private lateinit var marker : Marker
@@ -45,15 +46,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
 
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         mo = MarkerOptions().position(LatLng(0.0,0.0)).title("My position")
-
-//        points = MutableList<LatLng>()
-//        points.add(LatLng(55.016, 12.321))
-//        points.add(LatLng(-34.747, 145.592))
-//        points.add(LatLng(-34.364, 147.891))
-//        points.add(LatLng(-33.501, 150.217))
-//        points.add(LatLng(-32.306, 149.248))
-//        points.add(LatLng(-32.491, 147.309))
-
 
         if (Build.VERSION.SDK_INT >= 23) {
             checkPermissions()
@@ -120,14 +112,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
     }
 
     override fun onLocationChanged(location: Location?) {
-        println("zzz: " + location!!.latitude +  " " + location.longitude)
         val myCoords = LatLng(location!!.latitude, location.longitude)
         marker.position = myCoords
 
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myCoords, 16.0f))
+        mPolyline?.remove()
         points.add(myCoords)
-
-        mMap.addPolyline(PolylineOptions().addAll(points))
+        if (points.size > 1) {
+            mPolyline = mMap.addPolyline(PolylineOptions().addAll(points))
+//            mPolyline = mMap.addPolyline(PolylineOptions().add(points[points.size - 2]).add(points[points.size - 1]))
+        }
 
     }
 
@@ -140,12 +134,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, LocationListener {
         locationManager.requestLocationUpdates(provider, 2000L, 20F, this)
     }
 
-    fun isLocationEnabled() : Boolean {
+    private fun isLocationEnabled() : Boolean {
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
                 locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
     }
 
-    fun showAlert(type : String) {
+    private fun showAlert(type : String) {
         val title : CharSequence
         val message : String
         val btnText : String

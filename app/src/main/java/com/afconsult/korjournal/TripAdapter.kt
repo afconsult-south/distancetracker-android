@@ -3,6 +3,7 @@ package com.afconsult.korjournal
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.afconsult.korjournal.TripAdapter.TripViewHolder
@@ -11,9 +12,14 @@ import kotlinx.android.synthetic.main.trip_list_item.view.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?) : RecyclerView.Adapter<TripViewHolder>() {
+class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?, private val listener: OnTripClickListener) :
+    RecyclerView.Adapter<TripViewHolder>() {
 
-    val dateFormat = SimpleDateFormat("yyy/MM/dd, HH:mm", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("yyy/MM/dd, HH:mm", Locale.getDefault())
+
+    interface OnTripClickListener {
+        fun onTripClick(trip: TripsData)
+    }
 
     // Gets the number of trips in the list
     override fun getItemCount(): Int {
@@ -33,9 +39,7 @@ class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?) : 
         val date = Date(items.get(position).start!!)
         holder.date.text = dateFormat.format(date)
 
-
-        // DateTime converter
-//        holder.date.text = Date(items.get(position).start!!).toString()
+        holder.itemView.setOnClickListener { listener.onTripClick(items.get(position))}
     }
 
     class TripViewHolder(view: View) : RecyclerView.ViewHolder(view) {

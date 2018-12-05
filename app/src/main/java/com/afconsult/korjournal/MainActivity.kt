@@ -64,11 +64,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun openMaps() {
-        val intent = Intent(this, MapsActivity::class.java)
-//                    val message = editText_main!!.text.toString()
-//                    intent.putExtra(EXTRA_MESSAGE, message)
-//                    startActivityForResult(intent, TEXT_REQUEST)
-        startActivity(intent)
+        startActivity(Intent(this, MapsActivity::class.java))
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

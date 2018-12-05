@@ -1,6 +1,5 @@
 package com.afconsult.korjournal
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.view.LayoutInflater
@@ -14,7 +13,6 @@ import kotlinx.android.synthetic.main.fragment_new_trip.*
 
 
 class NewTripFragment : Fragment() {
-
     var millisecondTime: Long = 0
     var startTime: Long = 0
     var duration: Long = 0
@@ -26,7 +24,7 @@ class NewTripFragment : Fragment() {
 
     var distance: Double = 12.4
 
-    var running: Boolean = false;
+    var running: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_new_trip, container, false)
@@ -39,20 +37,18 @@ class NewTripFragment : Fragment() {
             if (!running) {
                 running = true
 //                Toast.makeText(context, "Resan startas!", Toast.LENGTH_LONG).show()
-                startButton.setText("Stoppa resa")
+                startButton.text = "Stoppa resa"
                 startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_stop, 0, 0, 0)
 
                 startTime = System.currentTimeMillis()
                 handler.postDelayed(runnable, 0)
             } else {
-                duration += millisecondTime;
+                duration += millisecondTime
 
-                handler.removeCallbacks(runnable);
+                handler.removeCallbacks(runnable)
 
-                showCreateCategoryDialog()
+                showSaveTripDialog()
             }
-
-//            openMaps()
         }
 
         resetButton.setOnClickListener {
@@ -61,7 +57,7 @@ class NewTripFragment : Fragment() {
     }
 
     private fun reset() {
-        handler.removeCallbacks(runnable);
+        handler.removeCallbacks(runnable)
 
         millisecondTime = 0
         startTime = 0
@@ -77,42 +73,31 @@ class NewTripFragment : Fragment() {
         durationTextView.text = "00:00:00"
         distanceTextView.text = "00.00"
 
-        startButton.setText("Starta resa")
+        startButton.text = "Starta resa"
         startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_play_circle_outline, 0, 0, 0)
 
         resetButton.isEnabled = false
-
     }
-
-
 
     companion object {
         fun newInstance(): NewTripFragment = NewTripFragment()
     }
 
-    var runnable: Runnable = object : Runnable {
+    private var runnable: Runnable = object : Runnable {
 
         override fun run() {
 
             millisecondTime = System.currentTimeMillis() - startTime
-
             updateTime = duration + millisecondTime
-
             seconds = (updateTime.toInt() / 1000)
-
             minutes = seconds / 60
-
             seconds = seconds % 60
-
             minutes = minutes % 60
-
             hours = minutes / 60
 
-            durationTextView.setText(
-                String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format(
-                    "%02d",
-                    seconds
-                )
+            durationTextView.text = String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":" + String.format(
+                "%02d",
+                seconds
             )
 
             handler.postDelayed(this, 0)
@@ -120,7 +105,7 @@ class NewTripFragment : Fragment() {
 
     }
 
-    fun showCreateCategoryDialog() {
+    private fun showSaveTripDialog() {
         val builder = AlertDialog.Builder(this.context!!)
         builder.setTitle("Spara resa")
 
@@ -130,7 +115,7 @@ class NewTripFragment : Fragment() {
         val destinationEditText = view.findViewById(R.id.destinationEditText) as EditText
         val noteEditText = view.findViewById(R.id.noteEditText) as EditText
 
-        builder.setView(view);
+        builder.setView(view)
 
         // set up the ok button
         builder.setPositiveButton(android.R.string.ok) { dialog, p1 ->
@@ -152,10 +137,6 @@ class NewTripFragment : Fragment() {
             }
 
             if (isValid) {
-                // do something
-            }
-
-            if (isValid) {
                 dialog.dismiss()
             }
 
@@ -165,7 +146,6 @@ class NewTripFragment : Fragment() {
         builder.setNegativeButton(android.R.string.cancel) { dialog, p1 ->
             dialog.cancel()
         }
-
-        builder.show();
+        builder.show()
     }
 }
