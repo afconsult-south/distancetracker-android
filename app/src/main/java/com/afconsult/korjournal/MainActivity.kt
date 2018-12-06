@@ -2,13 +2,12 @@ package com.afconsult.korjournal
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.afconsult.korjournal.database.DbWorkerThread
+import com.afconsult.korjournal.database.PathData
 import com.afconsult.korjournal.database.TripsData
 import com.afconsult.korjournal.database.TripsDataBase
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -87,7 +86,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun insertTripsDataInDb(tripsData: TripsData) {
-        val task = Runnable { mDb?.tripsDataDao()?.insert(tripsData) }
+        val task = Runnable {
+            val tripID = mDb?.tripsDataDao()?.insert(tripsData)
+
+            val id = mDb?.pathDataDao()?.insert(PathData(tripID!!))
+
+            println(id)
+        }
         mDbWorkerThread.postTask(task)
     }
 

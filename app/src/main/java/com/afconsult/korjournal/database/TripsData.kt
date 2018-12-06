@@ -22,10 +22,8 @@ data class TripsData(
     @ColumnInfo(name = "vehicle_name") var vehicleName: String,
     @ColumnInfo(name = "vehicle_type") var vehicleType: String,
 
-    @ColumnInfo(name = "notes") var notes: String?,
-
-    @ColumnInfo(name = "uuid") var uuid: String?
+    @ColumnInfo(name = "notes") var notes: String?
 
 ) {
-    constructor() : this(null, false, 0.0, null, null, "", "", "", "DIESEL", null, "")
+    constructor() : this(null, false, 0.0, null, null, "", "", "", "DIESEL", "")
 }

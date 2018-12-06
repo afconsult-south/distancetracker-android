@@ -8,7 +8,6 @@ import com.afconsult.korjournal.database.TripsData
 
 @Dao
 interface TripsDataDao {
-
     @Query("SELECT * from trips")
     fun getAll(): List<TripsData>
 
@@ -16,8 +15,10 @@ interface TripsDataDao {
     fun getTrip(rowId : Long): TripsData
 
     @Insert(onConflict = REPLACE)
-    fun insert(tripsData: TripsData)
+    fun insert(tripsData: TripsData) : Long
+
 
     @Query("DELETE from trips")
     fun deleteAll()
+
 }

@@ -8,10 +8,11 @@ import androidx.room.TypeConverter
 import java.util.*
 
 
-@Database(entities = arrayOf(TripsData::class), version = 2)
+@Database(entities = arrayOf(TripsData::class, PathData::class), version = 2)
 abstract class TripsDataBase : RoomDatabase() {
 
     abstract fun tripsDataDao(): TripsDataDao
+    abstract fun pathDataDao(): PathDataDao
 
     companion object {
         private var INSTANCE: TripsDataBase? = null
