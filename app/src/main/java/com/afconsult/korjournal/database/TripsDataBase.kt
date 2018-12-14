@@ -8,7 +8,7 @@ import androidx.room.TypeConverter
 import java.util.*
 
 
-@Database(entities = arrayOf(TripsData::class, PathData::class), version = 2)
+@Database(entities = arrayOf(TripsData::class, PathData::class), version = 1)
 abstract class TripsDataBase : RoomDatabase() {
 
     abstract fun tripsDataDao(): TripsDataDao
@@ -17,17 +17,17 @@ abstract class TripsDataBase : RoomDatabase() {
     companion object {
         private var INSTANCE: TripsDataBase? = null
 
-        fun getInstance(context: Context): TripsDataBase? {
+        fun getInstance(context: Context): TripsDataBase {
             if (INSTANCE == null) {
                 synchronized(TripsDataBase::class) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
 //                    INSTANCE = Room.inMemoryDatabaseBuilder(context.getApplicationContext(),
-                        TripsDataBase::class.java, "trips.db")
+                        TripsDataBase::class.java, "trip.db")
 //                        .allowMainThreadQueries()
                         .build()
                 }
             }
-            return INSTANCE
+            return INSTANCE!!
         }
 
         fun destroyInstance() {

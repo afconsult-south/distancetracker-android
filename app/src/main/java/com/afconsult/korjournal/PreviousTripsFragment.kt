@@ -53,6 +53,7 @@ class PreviousTripsFragment : Fragment(), TripAdapter.OnTripClickListener {
 
     override fun onTripClick(trip: TripsData) {
         Toast.makeText(context, trip.departure + " " + trip.destination,  Toast.LENGTH_LONG).show()
+        startActivity(TripDetailsActivity.newInstance(context, trip.id))
     }
 
 }

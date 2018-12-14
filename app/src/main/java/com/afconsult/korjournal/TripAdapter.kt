@@ -3,7 +3,6 @@ package com.afconsult.korjournal
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.afconsult.korjournal.TripAdapter.TripViewHolder
@@ -34,7 +33,7 @@ class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?, pr
     override fun onBindViewHolder(holder: TripAdapter.TripViewHolder, position: Int) {
         holder.departure.text = items.get(position).departure
         holder.destination.text = items.get(position).destination
-        holder.distance.text = items.get(position).distance.toString()
+        holder.distance.text = items.get(position).getDistanceString()
 
         val date = Date(items.get(position).start!!)
         holder.date.text = dateFormat.format(date)

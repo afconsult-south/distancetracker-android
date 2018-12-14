@@ -2,8 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:animateLayoutChanges="true"
         android:orientation="vertical">
 
     <TextView
@@ -13,7 +15,7 @@
             android:text="00.00"
             android:gravity="center_vertical|center_horizontal"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:textSize="64sp"
@@ -29,7 +31,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/distanceDivider"
-            style="@style/textUnit"/>
+            style="@style/textUnit"
+            android:layout_marginTop="-2dp"/>
 
     <View
             android:id="@+id/distanceDivider"
@@ -37,7 +40,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/distanceTextView"
             app:layout_constraintStart_toStartOf="parent"
-            style="@style/divider"/>
+            style="@style/divider"
+            android:layout_marginTop="-2dp"/>
 
     <TextView
             android:id="@+id/durationTextView"
@@ -50,7 +54,7 @@
             android:textSize="36sp"
             android:textAlignment="center"
             app:layout_constraintTop_toBottomOf="@+id/distanceLabel"
-            android:layout_marginTop="32dp"/>
+            android:layout_marginTop="8dp"/>
 
     <View
             android:id="@+id/durationDivider"
@@ -58,7 +62,8 @@
             app:layout_constraintEnd_toStartOf="@+id/speedDivider"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/durationTextView"
-            style="@style/divider"/>
+            style="@style/divider"
+            android:layout_marginTop="-2dp"/>
 
     <TextView
             android:id="@+id/durationLabel"
@@ -66,7 +71,8 @@
             app:layout_constraintTop_toBottomOf="@+id/durationDivider"
             app:layout_constraintStart_toStartOf="@+id/durationDivider"
             app:layout_constraintEnd_toEndOf="@+id/durationDivider"
-            style="@style/textUnit"/>
+            style="@style/textUnit"
+            android:layout_marginTop="-2dp"/>
 
     <TextView
             android:id="@+id/speedTextView"
@@ -79,7 +85,7 @@
             android:textSize="36sp"
             android:textAlignment="center"
             app:layout_constraintTop_toBottomOf="@+id/distanceLabel"
-            android:layout_marginTop="32dp"/>
+            android:layout_marginTop="8dp"/>
 
     <View
             android:id="@+id/speedDivider"
@@ -87,7 +93,8 @@
             app:layout_constraintStart_toEndOf="@+id/durationDivider"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/speedTextView"
-            style="@style/divider"/>
+            style="@style/divider"
+            android:layout_marginTop="-2dp"/>
 
     <TextView
             android:id="@+id/speedLabel"
@@ -95,7 +102,8 @@
             app:layout_constraintTop_toBottomOf="@+id/speedDivider"
             app:layout_constraintStart_toStartOf="@+id/speedDivider"
             app:layout_constraintEnd_toEndOf="@+id/speedDivider"
-            style="@style/textUnit"/>
+            style="@style/textUnit"
+            android:layout_marginTop="-2dp"/>
 
     <Button
             android:id="@+id/startButton"
@@ -104,26 +112,49 @@
             android:layout_height="64dp"
             android:layout_width="160dp"
             android:drawableStart="@drawable/ic_play_circle_outline"
-            android:layout_marginBottom="16dp"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/resetButton"
-            app:layout_constraintHorizontal_bias="0.504"/>
+            app:layout_constraintHorizontal_bias="0.504"
+            android:layout_marginBottom="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/map"/>
 
     <Button
             android:id="@+id/resetButton"
             android:layout_gravity="center"
-            android:text="Reset"
+            android:text="Rensa"
             android:layout_height="32dp"
-            android:layout_width="160dp"
+            android:layout_width="80dp"
             android:background="@null"
             android:enabled="false"
-            app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginEnd="8dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/startButton"
             android:layout_marginStart="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginBottom="24dp"/>
+            android:layout_marginBottom="32dp"
+            app:layout_constraintBottom_toTopOf="@+id/map"/>
+
+    <FrameLayout
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+    </FrameLayout>
+
+    <TextView
+            android:id="@+id/banner"
+            android:text="Väntar på GPS..."
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/banner_height"
+            android:visibility="invisible"
+            android:textAlignment="center"
+            android:background="@color/colorAccentTransparent"
+            android:textColor="@color/white"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="@+id/map"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

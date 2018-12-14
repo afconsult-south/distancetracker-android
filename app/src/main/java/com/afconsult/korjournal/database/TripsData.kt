@@ -2,10 +2,8 @@ package com.afconsult.korjournal.database
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import java.sql.Blob
-import java.sql.Timestamp
+import java.text.DecimalFormat
 
 @Entity(tableName = "trips")
 data class TripsData(
@@ -26,4 +24,8 @@ data class TripsData(
 
 ) {
     constructor() : this(null, false, 0.0, null, null, "", "", "", "DIESEL", "")
+
+    fun getDistanceString() :String {
+        return DecimalFormat("#.##").format(distance)
+    }
 }

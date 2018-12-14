@@ -7,4 +7,5 @@
 
     <string name="title_new_trip">Ny resa</string>
     <string name="title_previous_trips">Logg</string>
+    <string name="title_activity_trip_details">TripDetailsActivity</string>
 </resources>

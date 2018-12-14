@@ -7,11 +7,8 @@ import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.afconsult.korjournal.database.DbWorkerThread
-import com.afconsult.korjournal.database.PathData
-import com.afconsult.korjournal.database.TripsData
 import com.afconsult.korjournal.database.TripsDataBase
 import com.google.android.material.bottomnavigation.BottomNavigationView
-
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -83,17 +80,6 @@ class MainActivity : AppCompatActivity() {
         val transaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.container, fragment)
         transaction.commit()
-    }
-
-    fun insertTripsDataInDb(tripsData: TripsData) {
-        val task = Runnable {
-            val tripID = mDb?.tripsDataDao()?.insert(tripsData)
-
-            val id = mDb?.pathDataDao()?.insert(PathData(tripID!!))
-
-            println(id)
-        }
-        mDbWorkerThread.postTask(task)
     }
 
     override fun onDestroy() {

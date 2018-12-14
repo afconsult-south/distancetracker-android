@@ -8,7 +8,8 @@
 
     <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:hint="Startplats">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/departureEditText"
@@ -16,14 +17,14 @@
                 android:layout_height="wrap_content"
                 android:nextFocusDown="@id/destinationEditText"
                 android:imeOptions="actionNext"
-                android:singleLine="true"
-                android:hint="Startplats"/>
+                android:singleLine="true"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:hint="Resmål">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/destinationEditText"
@@ -31,8 +32,7 @@
                 android:layout_height="wrap_content"
                 android:singleLine="true"
                 android:nextFocusDown="@id/noteEditText"
-                android:imeOptions="actionNext"
-                android:hint="Resmål"/>
+                android:imeOptions="actionNext"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
