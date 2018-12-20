@@ -44,7 +44,7 @@
                 android:textColor="@color/colorPrimary"/>
 
         <TextView
-                android:text="KM"
+                android:text="@string/km"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/distanceUnit"
@@ -54,57 +54,76 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="-5dp"/>
 
+        <TextView
+                android:text="@string/from_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/fromLabel"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="8dp"
+                app:layout_constraintStart_toStartOf="@+id/guideline"
+                android:layout_marginStart="8dp"/>
+
+        <TextView
+                android:text="@string/to_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/toLabel"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/fromTextView"
+                app:layout_constraintStart_toStartOf="@+id/guideline"
+                android:layout_marginStart="8dp"/>
+
         <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 app:srcCompat="@drawable/ic_flag"
                 android:id="@+id/from"
-                android:layout_marginTop="8dp"
-                app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginStart="8dp"
                 app:layout_constraintStart_toEndOf="@+id/guideline"
-                android:scaleType="center"/>
+                android:scaleType="center"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/fromLabel"/>
 
         <ImageView
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 app:srcCompat="@drawable/ic_flag_checkered"
                 android:id="@+id/to"
-                android:layout_marginTop="2dp"
-                app:layout_constraintTop_toBottomOf="@+id/from"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/toLabel"
                 android:layout_marginStart="8dp"
                 app:layout_constraintStart_toEndOf="@+id/guideline"
                 android:scaleType="center"/>
 
         <TextView
                 android:id="@+id/fromTextView"
-                android:layout_width="0dp"
-                android:layout_height="20dp"
-                android:text="ÅF"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/empty_address"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:layout_constraintTop_toTopOf="parent"
                 android:layout_marginTop="8dp"
                 android:textAlignment="center"
                 app:layout_constraintStart_toEndOf="@+id/guideline2"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/fromLabel"/>
 
         <TextView
                 android:id="@+id/toTextView"
-                android:layout_width="0dp"
-                android:layout_height="20dp"
-                android:text="Tetra Pak"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/empty_address"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:layout_marginTop="2dp"
-                app:layout_constraintTop_toBottomOf="@+id/fromTextView"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/toLabel"
                 android:textAlignment="textStart"
                 app:layout_constraintStart_toEndOf="@+id/guideline2"
                 android:layout_marginStart="8dp"/>
 
         <TextView
                 android:id="@+id/dateTextView"
-                android:text="2018-11-23, 15:25"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -140,12 +159,28 @@
 
         <include
                 layout="@layout/fragment_maps"
-                android:layout_height="350dp"
+                android:layout_height="0dp"
                 android:layout_width="0dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                />
+                android:id="@+id/include"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/dateTextView"/>
+
+        <TextView
+                android:id="@+id/noPointsView"
+                android:text="Körningen innehåller inga koordinater"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                android:background="@color/colorAccentTransparent"
+                android:textColor="@color/white"
+                android:gravity="center"
+                app:layout_constraintBottom_toBottomOf="@+id/include"
+                app:layout_constraintTop_toTopOf="@+id/include"
+                app:layout_constraintEnd_toEndOf="@+id/include"
+                app:layout_constraintStart_toStartOf="@+id/include"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

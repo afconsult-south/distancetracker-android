@@ -1,13 +1,18 @@
 package com.afconsult.korjournal
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.afconsult.korjournal.database.TripsData
+import com.afconsult.korjournal.database.TripsDataBase
+import com.afconsult.korjournal.tasks.DeleteTripTask
+import com.afconsult.korjournal.tasks.GetTripTask
+import com.afconsult.korjournal.tasks.InsertTripTask
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -15,12 +20,12 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_trip_details.*
-import java.text.SimpleDateFormat
 import java.util.*
 
-class TripDetailsActivity : AppCompatActivity(), OnMapReadyCallback, GetTripTask.TripCallback {
+class TripDetailsActivity : AppCompatActivity(), OnMapReadyCallback, GetTripTask.TripCallback, InsertTripTask.InsertCallback, DeleteTripTask.DeleteCallback  {
     private lateinit var mMap: GoogleMap
-    private val dateFormat = SimpleDateFormat("yyy/MM/dd, HH:mm", Locale.getDefault())
+    private lateinit var mTripData: TripsData
+    private lateinit var mPoints: List<LatLng>
 
     companion object {
         private const val TRIP_ID = "id"
@@ -38,47 +43,114 @@ class TripDetailsActivity : AppCompatActivity(), OnMapReadyCallback, GetTripTask
         setContentView(R.layout.activity_trip_details)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "TODO Edit", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+        fab.setOnClickListener { _ ->
+            showEditTripDialog()
         }
 
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
+    }
 
-        GetTripTask(this, intent.getLongExtra(TRIP_ID, -1)).execute()
+    private fun showEditTripDialog() {
+        val okClickListener = DialogInterface.OnClickListener { dialog, _ ->
+            InsertTripTask(
+                TripsDataBase.getInstance(this),
+                mTripData,
+                mPoints as MutableList<LatLng>,
+                this
+            ).execute()
+            dialog.dismiss()
+        }
+
+        TripUtils.showEditTripDialog(this, mTripData, okClickListener)
+    }
+
+    override fun onInsertComplete(success: Boolean) {
+        if (success) {
+            Snackbar.make(fab, "Resan uppdaterad", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show()
+            GetTripTask(this, intent.getLongExtra(TRIP_ID, -1)).execute()
+
+        }
     }
 
     override fun onGetTripComplete(tripData: TripsData, points: List<LatLng>) {
+        mTripData = tripData
+        mPoints = points
         fromTextView.text = tripData.departure
         toTextView.text = tripData.destination
         distanceTextView.text = tripData.getDistanceString()
-        dateTextView.text = dateFormat.format(Date(tripData.start!!))
+        dateTextView.text = TripUtils.formatDateTime(Date(tripData.start!!))
 
-        var polyline = mMap.addPolyline(PolylineOptions().addAll(points))
+        if (points.isNotEmpty()) {
+            mMap.addPolyline(PolylineOptions().addAll(points))
 
-        val builder = LatLngBounds.Builder()
-        for (p in points) {
-            builder.include(p)
+            val builder = LatLngBounds.Builder()
+            for (p in points) {
+                builder.include(p)
+            }
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 150))
+            mMap.addMarker(
+                MarkerOptions().position(points.first()).title("Departure").icon(
+                    TripUtils.bitmapDescriptorFromVector(
+                        this,
+                        R.drawable.ic_flag
+                    )
+                ).anchor(0.25f, 0.9f)
+            )
+            mMap.addMarker(
+                MarkerOptions().position(points.last()).title("Destination").icon(
+                    TripUtils.bitmapDescriptorFromVector(
+                        this,
+                        R.drawable.ic_flag_checkered
+                    )
+                ).anchor(0.25f, 0.9f)
+            )
+        } else {
+            noPointsView.visibility = View.VISIBLE
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 150))
-        mMap.addMarker(MarkerOptions().position(points.first()).title("Departure").icon(bitmapDescriptorFromVector(this, R.drawable.ic_flag)))
-        mMap.addMarker(MarkerOptions().position(points.last()).title("Destination").icon(bitmapDescriptorFromVector(this, R.drawable.ic_flag_checkered)))
 
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        GetTripTask(this, intent.getLongExtra(TRIP_ID, -1)).execute()
     }
 
-    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor {
-        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
-        vectorDrawable!!.setBounds(0, 0, vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight)
-        val bitmap =
-            Bitmap.createBitmap(vectorDrawable.intrinsicWidth, vectorDrawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        vectorDrawable.draw(canvas)
-        return BitmapDescriptorFactory.fromBitmap(bitmap)
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_detail, menu)
+        return true
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_export -> {
+                TripUtils.exportToMail(this, listOf(mTripData))
+                true
+            }
+            R.id.action_delete -> {
+                showDeleteTripDialog()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    fun showDeleteTripDialog() {
+        val okClickListener = DialogInterface.OnClickListener { dialog, _ ->
+            DeleteTripTask(
+                TripsDataBase.getInstance(this),
+                this as DeleteTripTask.DeleteCallback
+            ).execute(listOf(mTripData.id!!))
+            dialog.dismiss()
+        }
+        TripUtils.showDeleteTripDialog(this, TripUtils.formatDateTime(Date(mTripData.start!!)), okClickListener)
+    }
+
+    override fun onDeleteComplete(success: Boolean) {
+        finish()
+    }
 }

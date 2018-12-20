@@ -1,4 +1,4 @@
-package com.afconsult.korjournal
+package com.afconsult.korjournal.tasks
 
 import android.os.AsyncTask
 import com.afconsult.korjournal.database.PathData
@@ -18,7 +18,7 @@ class InsertTripTask(database: TripsDataBase, tripsData: TripsData, tripsPoints:
 
     override fun doInBackground(vararg params: Void?): Boolean? {
         val tripID = db?.tripsDataDao()?.insert(data!!)
-        var success : Boolean = false
+        var success : Boolean = tripID != -1L
 
         println("aaa "+ points!!.size)
         if (points.size > 0) {

@@ -8,16 +8,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afconsult.korjournal.TripAdapter.TripViewHolder
 import com.afconsult.korjournal.database.TripsData
 import kotlinx.android.synthetic.main.trip_list_item.view.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?, private val listener: OnTripClickListener) :
     RecyclerView.Adapter<TripViewHolder>() {
 
-    private val dateFormat = SimpleDateFormat("yyy/MM/dd, HH:mm", Locale.getDefault())
-
     interface OnTripClickListener {
         fun onTripClick(trip: TripsData)
+        fun onTripLongClick(trip: TripsData)
     }
 
     // Gets the number of trips in the list
@@ -31,14 +29,21 @@ class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?, pr
 
     // Binds each trip in the ArrayList to a view
     override fun onBindViewHolder(holder: TripAdapter.TripViewHolder, position: Int) {
+        holder.date.text = TripUtils.formatDate(Date(items.get(position).start!!))
+        holder.regNumber.text = items.get(position).vehicleName
+
+
         holder.departure.text = items.get(position).departure
         holder.destination.text = items.get(position).destination
         holder.distance.text = items.get(position).getDistanceString()
 
-        val date = Date(items.get(position).start!!)
-        holder.date.text = dateFormat.format(date)
+
+        holder.fromTime.text = TripUtils.formatTime(Date(items.get(position).start!!))
+        holder.toTime.text = TripUtils.formatTime(Date(items.get(position).end!!))
 
         holder.itemView.setOnClickListener { listener.onTripClick(items.get(position))}
+        holder.itemView.setOnLongClickListener { listener.onTripLongClick(items.get(position))
+        return@setOnLongClickListener true }
     }
 
     class TripViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -47,6 +52,9 @@ class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?, pr
         val destination = view.toTextView
         val distance = view.distanceTextView
         val date = view.dateTextView
+        val fromTime = view.fromTimeTextView
+        val toTime = view.toTimeTextView
+        val regNumber = view.regNumberTextView
     }
 }
 

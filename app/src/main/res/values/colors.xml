@@ -2,8 +2,10 @@
 <resources>
     <color name="colorPrimary">#505050</color>
     <color name="colorPrimaryDark">#333333</color>
-    <color name="colorAccent">#405070</color>
+    <!--<color name="colorAccent">#405070</color>-->
+    <color name="colorAccent">#4a679f</color>
     <color name="colorAccentTransparent">#CC405070</color>
+    <color name="bannerBackground">#88D0D0D0</color>
 
     <color name="white">#FFFFFF</color>
 </resources>

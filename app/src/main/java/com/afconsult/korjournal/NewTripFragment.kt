@@ -3,6 +3,7 @@ package com.afconsult.korjournal
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.*
@@ -13,21 +14,18 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.afconsult.korjournal.database.TripsData
 import com.afconsult.korjournal.database.TripsDataBase
+import com.afconsult.korjournal.tasks.InsertTripTask
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.fragment_new_trip.*
-import java.io.IOException
-import java.text.DecimalFormat
-import java.text.NumberFormat
 import java.util.*
 
 
@@ -75,15 +73,12 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        mDb = TripsDataBase.getInstance(context!!)!!
-
         startButton.setOnClickListener {
             resetButton.isEnabled = true
 
             if (!running) {
                 // START
                 running = true
-
                 checkPermissionsIfNeeded()
 
 //                showBanner(true)
@@ -96,9 +91,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
             } else {
                 // STOP
                 locationManager.removeUpdates(this)
-
                 duration += millisecondTime
-
                 handler.removeCallbacks(runnable)
 
                 showSaveTripDialog()
@@ -132,6 +125,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
 
         durationTextView.text = "00:00:00"
         distanceTextView.text = "00.00"
+        speedTextView.text = "00.0"
 
         points.clear();
         timestamps.clear();
@@ -173,50 +167,24 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
     }
 
     private fun showSaveTripDialog() {
-
         startButton.text = "Spara resa"
-        val builder = AlertDialog.Builder(this.context!!)
-        builder.setTitle("Spara resa")
 
-        val view = layoutInflater.inflate(R.layout.dialog_save_trip, null)
-
-        val departureEditText = view.findViewById(R.id.departureEditText) as EditText
-        val destinationEditText = view.findViewById(R.id.destinationEditText) as EditText
-        val noteEditText = view.findViewById(R.id.noteEditText) as EditText
-
-        if (points.size > 0) {
-            departureEditText.setText(getAddress(points[0]))
-            destinationEditText.setText(getAddress(points[points.size - 1]))
+        val tripsData = TripsData()
+        if (points.isNotEmpty()) {
+            tripsData.departure = TripUtils.getAddress(context!!, points.first())
+            tripsData.destination = TripUtils.getAddress(context!!, points.last())
         }
+        tripsData.start = startTime
+        tripsData.end = startTime + duration
+        tripsData.distance = distance
 
-        builder.setView(view)
-
-        // set up the ok button
-        builder.setPositiveButton(android.R.string.ok) { dialog, p1 ->
-            val tripsData = TripsData()
-            tripsData.departure = departureEditText.text.toString()
-            tripsData.destination = destinationEditText.text.toString()
-            tripsData.notes = noteEditText.text.toString()
-
-            tripsData.start = startTime
-            tripsData.end = startTime + duration
-
-            tripsData.distance = distance
-
-//            val nf = NumberFormat.getNumberInstance(Locale.US)
-//            val formatter = nf as DecimalFormat
-//            formatter.applyPattern("#.###")
-//            tripsData.distance = formatter.format(distance).toDouble()
-
-            InsertTripTask(TripsDataBase.getInstance(context!!), tripsData, points, this).execute()
-
+        val okClickListener = DialogInterface.OnClickListener { dialog, _ ->
+            InsertTripTask(TripsDataBase.getInstance(context!!), tripsData, points, this)
+                .execute()
             dialog.dismiss()
         }
 
-        builder.setNegativeButton(android.R.string.cancel) { dialog, p1 ->
-            dialog.cancel()
-        }
-        builder.show()
+        TripUtils.showSaveTripDialog(context!!, tripsData, okClickListener)
     }
 
     override fun onInsertComplete(success: Boolean) {
@@ -265,8 +233,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        mo = MarkerOptions().position(LatLng(0.0,0.0)).title("My position")
-        marker = mMap.addMarker(mo)
+
     }
 
     override fun onProviderDisabled(provider: String?) {
@@ -285,9 +252,15 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
         banner.visibility = View.INVISIBLE
 
         val myCoords = LatLng(location!!.latitude, location.longitude)
-        marker.position = myCoords
 
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myCoords, 16.0f))
+        if (::marker.isInitialized) {
+            marker.position = myCoords
+        } else {
+            mo = MarkerOptions().position(myCoords).title("My position").icon(TripUtils.bitmapDescriptorFromVector(context!!, R.drawable.ic_map_marker_circle)).anchor(0.5f, 0.5f)
+            marker = mMap.addMarker(mo)
+        }
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myCoords, 14.5f))
         mPolyline?.remove()
         points.add(myCoords)
         timestamps.add(System.currentTimeMillis())
@@ -295,8 +268,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
             mPolyline = mMap.addPolyline(PolylineOptions().addAll(points))
             distance += getDistanceBetween(points.get(points.size - 2), points.get(points.size - 1));
             distanceTextView.text = String.format("%.2f", distance)
-
-//            Toast.makeText(context, "" + (timestamps.get(points.size - 1) - timestamps.get(points.size - 2)) + " ms", Toast.LENGTH_SHORT).show()
 
             var timeMS = 0.0
             var distanceKM = 0.0
@@ -314,8 +285,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
                     speedTextView.text = String.format("%.1f", speed)
                 }
             }
-
-//            mPolyline = mMap.addPolyline(PolylineOptions().add(points[points.size - 2]).add(points[points.size - 1]))
         }
 
     }
@@ -352,7 +321,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
 
         val dialog = AlertDialog.Builder(context!!)
         dialog.setCancelable(false)
-        dialog.setTitle(title).setMessage(message).setPositiveButton(btnText) { _, which ->
+        dialog.setTitle(title).setMessage(message).setPositiveButton(btnText) { _, _ ->
             if (type == "plats") {
                 val myIntent = Intent(Settings.ACTION_LOCALE_SETTINGS)
                 startActivity(myIntent)
@@ -365,33 +334,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
 
     }
 
-    private fun getAddress(latLan :LatLng) : String {
-        val geocoder = Geocoder(context, Locale.getDefault());
-        var retVal = ""
-
-        try {
-
-        val addresses = geocoder.getFromLocation(latLan.latitude, latLan.longitude, 1) // Here 1 represent max location result to returned, by documents it recommended 1 to 5
-        val firstAddress = addresses.get(0)
-
-        val knownName = firstAddress.getFeatureName(); // Only if available else return NULL
-        val address = firstAddress.getAddressLine(0)// If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-        val city = firstAddress.getLocality();
-        //String state = addresses.get(0).getAdminArea();
-        //String country = addresses.get(0).getCountryName();
-        //String postalCode = addresses.get(0).getPostalCode();
-
-//        if (knownName != null) {
-//            return "$knownName, $city"
-//        }
-            retVal = address.substringBeforeLast(",").substringBeforeLast(",") + ", " + firstAddress.locality
-        } catch (e: IOException) {
-
-        }
-
-        return retVal
-    }
-
     private fun getDistanceBetween(p1 : LatLng, p2 : LatLng) : Double {
         val results = FloatArray(1)
         Location.distanceBetween(p1.latitude, p1.longitude, p2.latitude, p2.longitude, results)
@@ -399,13 +341,4 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
         return results[0].toDouble()/1000
     }
 
-//    private fun showBanner(show: Boolean) {
-//        if (show) {
-//            val height = getResources().getDimensionPixelSize(R.dimen.banner_height);
-//            banner.layoutParams.height = height
-//        } else {
-//            banner.text = ""
-//            banner.layoutParams.height = 0
-//        }
-//    }
 }

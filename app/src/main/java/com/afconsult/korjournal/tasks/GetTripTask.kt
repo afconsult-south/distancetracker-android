@@ -1,4 +1,4 @@
-package com.afconsult.korjournal
+package com.afconsult.korjournal.tasks
 
 import android.content.Context
 import android.os.AsyncTask

@@ -2,7 +2,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
@@ -11,17 +10,16 @@
     <TextView
             android:id="@+id/distanceTextView"
             android:layout_width="wrap_content"
-            android:layout_height="86dp"
+            android:layout_height="wrap_content"
             android:text="00.00"
             android:gravity="center_vertical|center_horizontal"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginTop="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:textSize="64sp"
             android:textAlignment="center"
             android:layout_marginBottom="89dp"
-            app:layout_constraintBottom_toTopOf="@+id/distanceDivider"/>
+            app:layout_constraintBottom_toTopOf="@+id/distanceDivider" />
 
 
     <TextView
@@ -36,12 +34,13 @@
 
     <View
             android:id="@+id/distanceDivider"
-            android:layout_width="200dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_width="0dp"
+            app:layout_constraintEnd_toEndOf="@+id/distanceTextView"
             app:layout_constraintTop_toBottomOf="@+id/distanceTextView"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/distanceTextView"
             style="@style/divider"
-            android:layout_marginTop="-2dp"/>
+            android:layout_height="5dp"
+            android:layout_marginTop="-6dp"/>
 
     <TextView
             android:id="@+id/durationTextView"
@@ -53,8 +52,7 @@
             app:layout_constraintEnd_toEndOf="@+id/durationDivider"
             android:textSize="36sp"
             android:textAlignment="center"
-            app:layout_constraintTop_toBottomOf="@+id/distanceLabel"
-            android:layout_marginTop="8dp"/>
+            app:layout_constraintTop_toBottomOf="@+id/distanceLabel" />
 
     <View
             android:id="@+id/durationDivider"
@@ -84,8 +82,7 @@
             app:layout_constraintEnd_toEndOf="@+id/speedDivider"
             android:textSize="36sp"
             android:textAlignment="center"
-            app:layout_constraintTop_toBottomOf="@+id/distanceLabel"
-            android:layout_marginTop="8dp"/>
+            app:layout_constraintTop_toBottomOf="@+id/distanceLabel" />
 
     <View
             android:id="@+id/speedDivider"
@@ -117,8 +114,8 @@
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintHorizontal_bias="0.504"
-            android:layout_marginBottom="16dp"
-            app:layout_constraintBottom_toTopOf="@+id/map"/>
+            app:layout_constraintTop_toBottomOf="@+id/durationLabel"
+            android:layout_marginTop="16dp"/>
 
     <Button
             android:id="@+id/resetButton"
@@ -132,14 +129,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/startButton"
             android:layout_marginStart="8dp"
-            android:layout_marginBottom="32dp"
-            app:layout_constraintBottom_toTopOf="@+id/map"/>
+            app:layout_constraintHorizontal_bias="0.724"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toTopOf="@+id/startButton"/>
 
     <FrameLayout
             android:id="@+id/map"
             android:layout_width="match_parent"
-            android:layout_height="160dp"
-            app:layout_constraintBottom_toBottomOf="parent">
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/startButton">
 
     </FrameLayout>
 

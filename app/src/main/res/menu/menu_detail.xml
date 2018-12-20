@@ -2,13 +2,14 @@
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
       tools:context="com.afconsult.korjournal.MainActivity">
-    <item android:id="@+id/action_settings"
-          android:title="@string/action_settings"
+    <item android:id="@+id/action_export"
+          android:title="Exportera"
           android:orderInCategory="100"
-          app:showAsAction="never"/>
-    <item android:id="@+id/action_map"
-          android:title="@string/action_map"
-          android:visible="false"
+          android:icon="@drawable/ic_file_export"
+          app:showAsAction="ifRoom"/>
+    <item android:id="@+id/action_delete"
+          android:title="Ta bort"
+          android:icon="@drawable/ic_delete"
           android:orderInCategory="100"
           app:showAsAction="ifRoom"/>
 </menu>
