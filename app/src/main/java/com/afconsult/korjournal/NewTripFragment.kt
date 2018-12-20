@@ -11,9 +11,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -28,18 +27,13 @@ import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.fragment_new_trip.*
 import java.util.*
 
-
 class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, InsertTripTask.InsertCallback {
-
 
     val PERMISSIONS_REQUEST_ALL = 1
 
     val timeS = 1000.0;
     val timeM = timeS * 60;
     val timeH = timeM * 60;
-
-    // Database
-//    lateinit var mDb : TripsDataBase
 
     // Calculations
     var millisecondTime: Long = 0
@@ -60,6 +54,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
     private lateinit var mMap: GoogleMap
     private var mPolyline : Polyline? = null
 
+    private lateinit var mVehicleName : String
     private lateinit var mo : MarkerOptions
     private lateinit var marker : Marker
     private var points : MutableList<LatLng> = ArrayList<LatLng>()
@@ -67,6 +62,10 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
 
     private lateinit var locationManager : LocationManager
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_new_trip, container, false)
 
@@ -177,6 +176,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
         tripsData.start = startTime
         tripsData.end = startTime + duration
         tripsData.distance = distance
+        tripsData.vehicleName = mVehicleName
 
         val okClickListener = DialogInterface.OnClickListener { dialog, _ ->
             InsertTripTask(TripsDataBase.getInstance(context!!), tripsData, points, this)
@@ -339,6 +339,30 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
         Location.distanceBetween(p1.latitude, p1.longitude, p2.latitude, p2.longitude, results)
 
         return results[0].toDouble()/1000
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?, menuInflater: MenuInflater?) {
+        menuInflater!!.inflate(R.menu.menu_new_trip, menu)
+
+        val item = menu!!.findItem(R.id.spinner)
+        val spinner = item.actionView as Spinner
+
+        var vehicles = arrayOf("ABC123", "DEF456", "GHI789")
+        vehicles += "Lägg till..."
+
+        val adapter = ArrayAdapter<String>(context, R.layout.vehicle_spinner, vehicles)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spinner.adapter = adapter
+        spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                mVehicleName = (view as TextView).text.toString()
+            }
+        }
+        super.onCreateOptionsMenu(menu, menuInflater)
     }
 
 }

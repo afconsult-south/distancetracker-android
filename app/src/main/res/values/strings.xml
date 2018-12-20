@@ -7,7 +7,7 @@
 
     <string name="title_new_trip">Ny resa</string>
     <string name="title_previous_trips">Logg</string>
-    <string name="title_activity_trip_details">TripDetailsActivity</string>
+    <string name="title_activity_trip_details">Resa</string>
     <string name="empty_address">Tomt</string>
     <string name="to_label">Till:</string>
     <string name="from_label">Från:</string>
