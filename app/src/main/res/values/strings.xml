@@ -12,4 +12,6 @@
     <string name="to_label">Till:</string>
     <string name="from_label">Från:</string>
     <string name="km">KM</string>
+    <string name="notification_trip_name">Notifiering vid resa</string>
+    <string name="notification_trip_desc">En sticky notifiering visas under tiden som kör</string>
 </resources>

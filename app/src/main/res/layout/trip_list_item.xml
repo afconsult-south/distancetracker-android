@@ -75,7 +75,8 @@
                 app:layout_constraintStart_toEndOf="@+id/guideline2"
                 android:layout_marginStart="8dp"
                 android:hint="@string/empty_address"
-                />
+                android:layout_marginEnd="8dp"
+                app:layout_constraintEnd_toStartOf="@+id/guideline3"/>
 
         <TextView
                 android:id="@+id/toTextView"
@@ -90,7 +91,9 @@
                 android:layout_marginStart="8dp"
                 android:hint="@string/empty_address"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp"
+                android:layout_marginEnd="8dp"
+                app:layout_constraintEnd_toStartOf="@+id/guideline3"/>
 
         <TextView
                 android:id="@+id/dateTextView"
@@ -152,7 +155,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/guideline3"
-                app:layout_constraintGuide_end="100dp"/>
+                app:layout_constraintGuide_end="72dp"/>
 
         <androidx.constraintlayout.widget.Guideline
                 android:orientation="horizontal"

@@ -5,6 +5,7 @@
         style="?android:attr/spinnerItemStyle"
         android:singleLine="true"
         android:drawableLeft="@drawable/ic_vehicle"
+        android:drawablePadding="4dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="marquee"
