@@ -1,34 +1,29 @@
 package com.afconsult.korjournal
 
-import android.app.NotificationChannel
-import android.app.NotificationManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
+import android.content.ServiceConnection
+import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import androidx.annotation.RequiresApi
-import androidx.media.app.NotificationCompat as MediaNotificationCompat
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import androidx.fragment.app.Fragment
 import com.afconsult.korjournal.database.DbWorkerThread
 import com.afconsult.korjournal.database.TripsDataBase
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
+import androidx.media.app.NotificationCompat as MediaNotificationCompat
+
 
 class MainActivity : AppCompatActivity() {
-
-    val CHANNEL_ID = "com.afconsult.korjournal.running"
-    //    lateinit var mainToolbar: Toolbar
-    var mDb: TripsDataBase? = null
-
     lateinit var mDbWorkerThread: DbWorkerThread
+    var mDb: TripsDataBase? = null
 //    private val mUiHandler = Handler()
-    private var notificationManager: NotificationManager? = null
-
 
     private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener { item ->
         when (item.itemId) {
@@ -60,41 +55,6 @@ class MainActivity : AppCompatActivity() {
 
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
         openFragment(NewTripFragment.newInstance())
-
-        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel()
-        }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel() {
-        val channel = NotificationChannel(CHANNEL_ID, getString(R.string.notification_trip_name), NotificationManager.IMPORTANCE_DEFAULT)
-        channel.description = getString(R.string.notification_trip_desc)
-        channel.enableLights(true)
-        channel.lightColor = Color.BLUE
-        notificationManager?.createNotificationChannel(channel)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun sendNotification() {
-
-        val notificationID = 101
-        val notification = androidx.core.app.NotificationCompat.Builder(this@MainActivity, CHANNEL_ID)
-            .setContentTitle("En resa har startat")
-            .setContentText("Stoppa resan här:")
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setSmallIcon(R.drawable.ic_vehicle)
-            .setChannelId(CHANNEL_ID)
-            .setOngoing(true)
-            .addAction(R.drawable.ic_stop, "Stoppa", null) // #0
-            .setStyle(MediaNotificationCompat.MediaStyle()
-                .setShowActionsInCompactView(0 /* #0: stop button \*/)
-                .setMediaSession(null))
-            .build()
-
-        notificationManager?.notify(notificationID, notification)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -112,12 +72,6 @@ class MainActivity : AppCompatActivity() {
                 openMaps()
                 true
             }
-            R.id.action_notification -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    sendNotification()
-                }
-                true
-            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -133,4 +87,5 @@ class MainActivity : AppCompatActivity() {
         mDbWorkerThread.quit()
         super.onDestroy()
     }
+
 }

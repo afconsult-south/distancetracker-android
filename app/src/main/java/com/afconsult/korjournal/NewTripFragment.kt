@@ -1,16 +1,15 @@
 package com.afconsult.korjournal
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
 import android.content.pm.PackageManager
 import android.location.*
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.provider.Settings
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -26,8 +25,15 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.fragment_new_trip.*
 import java.util.*
+import android.content.Intent
 
-class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, InsertTripTask.InsertCallback {
+
+
+class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCallback, MyLocationService.CallBack, ServiceConnection {
+    lateinit var locationService: MyLocationService
+    var bound: Boolean = false
+
+    private val TAG = "NewTripFragment"
 
     val PERMISSIONS_REQUEST_ALL = 1
 
@@ -80,20 +86,22 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
                 running = true
                 checkPermissionsIfNeeded()
 
-//                showBanner(true)
                 banner.visibility = View.VISIBLE
                 startButton.text = "Stoppa resa"
                 startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_stop, 0, 0, 0)
 
                 startTime = System.currentTimeMillis()
-                handler.postDelayed(runnable, 0)
+                handler.postDelayed(updateStatsRunnable, 0)
+
+                startTracking()
             } else {
                 // STOP
-                locationManager.removeUpdates(this)
                 duration += millisecondTime
-                handler.removeCallbacks(runnable)
+                handler.removeCallbacks(updateStatsRunnable)
 
+                stopTracking()
                 showSaveTripDialog()
+
             }
         }
 
@@ -106,8 +114,30 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
         locationManager = activity!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
     }
 
+    override fun onStart() {
+        super.onStart()
+
+        if (running) {
+            handler.postDelayed(updateStatsRunnable, 500)
+            doBindService()
+        }
+    }
+
+    override fun onStop() {
+        if (running) {
+            handler.removeCallbacks(updateStatsRunnable)
+        }
+        doUnbindService()
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        doUnbindService()
+    }
+
     private fun reset() {
-        handler.removeCallbacks(runnable)
+        handler.removeCallbacks(updateStatsRunnable)
 
         millisecondTime = 0
         startTime = 0
@@ -124,28 +154,24 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
 
         durationTextView.text = "00:00:00"
         distanceTextView.text = "00.00"
-        speedTextView.text = "00.0"
+        speedTextView.text = "0"
 
         points.clear();
         timestamps.clear();
         mPolyline?.remove()
-
-        locationManager.removeUpdates(this)
-        handler.removeCallbacks(runnable)
 
         startButton.text = "Starta resa"
         startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_play_circle_outline, 0, 0, 0)
 
         resetButton.isEnabled = false
         banner.visibility = View.INVISIBLE
-//        showBanner(false)
     }
 
     companion object {
         fun newInstance(): NewTripFragment = NewTripFragment()
     }
 
-    private var runnable: Runnable = object : Runnable {
+    private var updateStatsRunnable: Runnable = object : Runnable {
 
         override fun run() {
             millisecondTime = System.currentTimeMillis() - startTime
@@ -191,12 +217,11 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
         reset()
     }
 
-
     private fun checkPermissionsIfNeeded() {
         if (Build.VERSION.SDK_INT >= 23) {
             checkPermissions()
         } else {
-            requestLocation()
+            startTracking()
         }
 
         if (!isLocationEnabled()) {
@@ -209,7 +234,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
             ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             showAlert("permissions")
         } else {
-            requestLocation()
+            startTracking()
         }
     }
 
@@ -218,7 +243,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
             PERMISSIONS_REQUEST_ALL -> {
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    requestLocation()
+                    startTracking()
                 }
                 return
             }
@@ -234,69 +259,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-    }
-
-    override fun onProviderDisabled(provider: String?) {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onProviderEnabled(provider: String?) {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-//        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onLocationChanged(location: Location?) {
-        banner.visibility = View.INVISIBLE
-
-        val myCoords = LatLng(location!!.latitude, location.longitude)
-
-        if (::marker.isInitialized) {
-            marker.position = myCoords
-        } else {
-            mo = MarkerOptions().position(myCoords).title("My position").icon(TripUtils.bitmapDescriptorFromVector(context!!, R.drawable.ic_map_marker_circle)).anchor(0.5f, 0.5f)
-            marker = mMap.addMarker(mo)
-        }
-
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myCoords, 14.5f))
-        mPolyline?.remove()
-        points.add(myCoords)
-        timestamps.add(System.currentTimeMillis())
-        if (points.size > 1) {
-            mPolyline = mMap.addPolyline(PolylineOptions().addAll(points))
-            distance += getDistanceBetween(points.get(points.size - 2), points.get(points.size - 1));
-            distanceTextView.text = String.format("%.2f", distance)
-
-            var timeMS = 0.0
-            var distanceKM = 0.0
-            if (points.size > 5) {
-                for (i in (points.size - 5)..(points.size - 1) ) {
-                    timeMS += timestamps.get(i) - timestamps.get(i - 1)
-                    distanceKM += getDistanceBetween(points.get(i), points.get(i - 1))
-
-                }
-
-                val speed = distanceKM/(timeMS/timeH);
-                if (speed >= 20.0) {
-                    speedTextView.text = speed.toInt().toString()
-                } else {
-                    speedTextView.text = String.format("%.1f", speed)
-                }
-            }
-        }
-
-    }
-
-    @SuppressLint("MissingPermission")
-    fun requestLocation() {
-        val criteria = Criteria()
-        criteria.accuracy = Criteria.ACCURACY_FINE
-        criteria.powerRequirement = Criteria.POWER_HIGH
-        val provider = locationManager.getBestProvider(criteria, true)
-
-        locationManager.requestLocationUpdates(provider, 1000L, 10F, this)
     }
 
     private fun isLocationEnabled() : Boolean {
@@ -331,7 +293,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
             }
         }
         dialog.show()
-
     }
 
     private fun getDistanceBetween(p1 : LatLng, p2 : LatLng) : Double {
@@ -363,6 +324,101 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, LocationListener, Insert
             }
         }
         super.onCreateOptionsMenu(menu, menuInflater)
+    }
+
+    override fun onServiceConnected(componentName: ComponentName, iBinder: IBinder) {
+        locationService = (iBinder as MyLocationService.MyBinder).service
+        locationService.setCallBack(this)
+    }
+
+    override fun onServiceDisconnected(name: ComponentName?) {
+        locationService.setCallBack(null)
+        bound = false
+    }
+
+    override fun onServiceLocationUpdate(locationPoints: MutableList<LatLng>, timestamps: MutableList<Long>) {
+        Log.e(TAG, "onLocationChanged: ${locationPoints.last()}")
+        points = locationPoints;
+
+        banner.visibility = View.INVISIBLE
+
+        val lastPosition = points.last()
+
+        if (::marker.isInitialized) {
+            marker.position = lastPosition
+        } else {
+            mo = MarkerOptions().position(lastPosition).title("My position").icon(TripUtils.bitmapDescriptorFromVector(context!!, R.drawable.ic_map_marker_circle)).anchor(0.5f, 0.5f)
+            marker = mMap.addMarker(mo)
+        }
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(lastPosition, 14.5f))
+        mPolyline?.remove()
+        if (points.size > 1) {
+            mPolyline = mMap.addPolyline(PolylineOptions().addAll(points))
+            distance += getDistanceBetween(points.get(points.size - 2), points.get(points.size - 1));
+            distanceTextView.text = String.format("%.2f", distance)
+
+            var timeMS = 0.0
+            var distanceKM = 0.0
+            if (points.size > 5) {
+                for (i in (points.size - 5)..(points.size - 1) ) {
+                    timeMS += timestamps.get(i) - timestamps.get(i - 1)
+                    distanceKM += getDistanceBetween(points.get(i), points.get(i - 1))
+                }
+
+                val speed = distanceKM/(timeMS/timeH);
+                speedTextView.text = speed.toInt().toString()
+            }
+        }
+    }
+
+//    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+//        return when (item!!.itemId) {
+//            R.id.action_service -> {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                    if (!bound) {
+//                        startTracking()
+//                    }
+//                    else {
+//                        stopTracking()
+//                    }
+//                }
+//                true
+//            }
+//            else -> super.onOptionsItemSelected(item)
+//        }
+//    }
+
+    private fun startTracking() {
+        val intent = Intent(context, MyLocationService::class.java)
+        activity!!.startService(intent)
+        doBindService()
+    }
+
+    private fun stopTracking() {
+        if (bound) {
+            val intent = Intent(context, MyLocationService::class.java)
+            doUnbindService()
+            activity!!.stopService(intent)
+        }
+    }
+
+    private fun doBindService() {
+        // Establish a connection with the service.  We use an explicit
+        // class name because we want a specific service implementation
+        // that we know will be running in our own process (and thus
+        // won't be supporting component replacement by other
+        // applications).
+        activity!!.bindService(Intent(context, MyLocationService::class.java), this@NewTripFragment, Context.BIND_AUTO_CREATE)
+        bound = true
+    }
+
+    private fun doUnbindService() {
+        if (bound) {
+            // Detach our existing connection.
+            activity!!.unbindService(this@NewTripFragment)
+            bound = false
+        }
     }
 
 }
