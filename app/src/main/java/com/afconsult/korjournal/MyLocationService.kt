@@ -36,6 +36,7 @@ class MyLocationService : Service() {
     // Custom interface Callback which is declared in this Service
     private var mCallBack: CallBack? = null
 
+    private var startTime : Long = 0L
     private var coordinates : MutableList<LatLng> = ArrayList()
     private var timestamps : MutableList<Long> = ArrayList<Long>()
 
@@ -54,6 +55,45 @@ class MyLocationService : Service() {
     override fun onCreate() {
         Log.i(TAG, "Service onCreate")
         mLocationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    }
+
+    override fun onDestroy() {
+        Log.i(TAG, "Service onDestroy")
+
+        super.onDestroy()
+
+        Toast.makeText(this, "MyService Completed or Stopped.", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
+        return Service.START_STICKY
+    }
+
+    override fun onBind(intent: Intent): IBinder? {
+        return mLocalbinder;
+    }
+
+    fun setCallBack(callBack: CallBack?) {
+        mCallBack = callBack
+    }
+
+    //Custom Binder class
+    inner class MyBinder : Binder() {
+        val service: MyLocationService
+            get() = this@MyLocationService
+    }
+
+    fun getStartTime() : Long {
+        return startTime
+    }
+
+    fun isTracking() : Boolean {
+        return startTime != 0L
+    }
+
+    fun startLocationTracking() {
+        startTime = System.currentTimeMillis()
 
         try {
             mLocationManager.requestLocationUpdates(
@@ -81,52 +121,23 @@ class MyLocationService : Service() {
         }
     }
 
-    override fun onDestroy() {
-        Log.i(TAG, "Service onDestroy")
+    fun stopLocationTracking() {
+        startTime = 0
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             cancelNotification()
         }
         mCallBack = null
-        for (i in 0 until mLocationListeners.lastIndex) {
+        for (i in 0..mLocationListeners.lastIndex) {
             try {
+                Log.d(TAG, "Shutting down: " + mLocationListeners[i])
                 mLocationManager.removeUpdates(mLocationListeners[i])
             } catch (ex: Exception) {
                 Toast.makeText(this, "Failed to remove location listeners.", Toast.LENGTH_SHORT).show()
                 Log.e(TAG, "Failed to remove location listeners, ignore", ex)
             }
         }
-        super.onDestroy()
-
-        Toast.makeText(this, "MyService Completed or Stopped.", Toast.LENGTH_SHORT).show()
     }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        return Service.START_STICKY
-    }
-
-    override fun onBind(intent: Intent): IBinder? {
-        return mLocalbinder;
-    }
-
-    fun setCallBack(callBack: CallBack?) {
-        mCallBack = callBack
-    }
-
-    //Custom Binder class
-    inner class MyBinder : Binder() {
-        val service: MyLocationService
-            get() = this@MyLocationService
-    }
-
-//    fun startLocationTracking() {
-//        // TODO
-//    }
-//
-//    fun stopLocationTracking() {
-//        // TODO
-//    }
-
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel() {
@@ -161,10 +172,10 @@ class MyLocationService : Service() {
         notificationManager?.cancel(NOTIFICATION_ID)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun isNotificationShowing() : Boolean{
-        return notificationManager?.activeNotifications.isNullOrEmpty()
-    }
+//    @RequiresApi(Build.VERSION_CODES.O)
+//    private fun isNotificationShowing() : Boolean{
+//        return notificationManager?.activeNotifications.isNullOrEmpty()
+//    }
 
     private inner class LocationListener(provider: String) : android.location.LocationListener {
         internal var mLastLocation: Location
@@ -196,6 +207,4 @@ class MyLocationService : Service() {
             Log.e(TAG, "onStatusChanged: $provider")
         }
     }
-
-
 }

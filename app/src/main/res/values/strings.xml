@@ -14,4 +14,8 @@
     <string name="km">KM</string>
     <string name="notification_trip_name">Notifiering vid resa</string>
     <string name="notification_trip_desc">En sticky notifiering visas under tiden som kör</string>
+
+    <string name="btn_stop">Stoppa resa</string>
+    <string name="btn_start">Starta resa</string>
+    <string name="btn_save">Spara resa</string>
 </resources>

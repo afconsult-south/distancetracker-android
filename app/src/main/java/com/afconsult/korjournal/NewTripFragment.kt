@@ -27,8 +27,6 @@ import kotlinx.android.synthetic.main.fragment_new_trip.*
 import java.util.*
 import android.content.Intent
 
-
-
 class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCallback, MyLocationService.CallBack, ServiceConnection {
     lateinit var locationService: MyLocationService
     var bound: Boolean = false
@@ -78,22 +76,23 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        startService();
+
         startButton.setOnClickListener {
             resetButton.isEnabled = true
 
             if (!running) {
                 // START
-                running = true
-                checkPermissionsIfNeeded()
 
-                banner.visibility = View.VISIBLE
-                startButton.text = "Stoppa resa"
-                startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_stop, 0, 0, 0)
+                if (Build.VERSION.SDK_INT >= 23) {
+                    checkPermissions()
+                } else {
+                    startTracking()
+                }
 
-                startTime = System.currentTimeMillis()
-                handler.postDelayed(updateStatsRunnable, 0)
-
-                startTracking()
+                if (!isLocationEnabled()) {
+                    showAlert("plats")
+                }
             } else {
                 // STOP
                 duration += millisecondTime
@@ -101,7 +100,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 
                 stopTracking()
                 showSaveTripDialog()
-
             }
         }
 
@@ -117,9 +115,9 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     override fun onStart() {
         super.onStart()
 
+        doBindService()
         if (running) {
             handler.postDelayed(updateStatsRunnable, 500)
-            doBindService()
         }
     }
 
@@ -133,12 +131,23 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 
     override fun onDestroy() {
         super.onDestroy()
-        doUnbindService()
+        if(!running) {
+            stopService()
+        }
+    }
+
+    private fun setRunning(time: Long) {
+        running = true
+        banner.visibility = View.VISIBLE
+        startButton.text = getString(R.string.btn_stop)
+        startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_stop, 0, 0, 0)
+
+        startTime = time
+        handler.postDelayed(updateStatsRunnable, 0)
+
     }
 
     private fun reset() {
-        handler.removeCallbacks(updateStatsRunnable)
-
         millisecondTime = 0
         startTime = 0
         duration = 0L
@@ -150,8 +159,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 
         distance = 0.0
 
-        running = false
-
         durationTextView.text = "00:00:00"
         distanceTextView.text = "00.00"
         speedTextView.text = "0"
@@ -160,7 +167,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         timestamps.clear();
         mPolyline?.remove()
 
-        startButton.text = "Starta resa"
+        startButton.text = getString(R.string.btn_start)
         startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_play_circle_outline, 0, 0, 0)
 
         resetButton.isEnabled = false
@@ -192,12 +199,12 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     }
 
     private fun showSaveTripDialog() {
-        startButton.text = "Spara resa"
+        startButton.text = getString(R.string.btn_save)
 
         val tripsData = TripsData()
         if (points.isNotEmpty()) {
-            tripsData.departure = TripUtils.getAddress(context!!, points.first())
-            tripsData.destination = TripUtils.getAddress(context!!, points.last())
+//            tripsData.departure = TripUtils.getAddress(context!!, points.first())
+//            tripsData.destination = TripUtils.getAddress(context!!, points.last())
         }
         tripsData.start = startTime
         tripsData.end = startTime + duration
@@ -209,24 +216,11 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
                 .execute()
             dialog.dismiss()
         }
-
         TripUtils.showSaveTripDialog(context!!, tripsData, okClickListener)
     }
 
     override fun onInsertComplete(success: Boolean) {
         reset()
-    }
-
-    private fun checkPermissionsIfNeeded() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            checkPermissions()
-        } else {
-            startTracking()
-        }
-
-        if (!isLocationEnabled()) {
-            showAlert("plats")
-        }
     }
 
     private fun checkPermissions() {
@@ -329,6 +323,9 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     override fun onServiceConnected(componentName: ComponentName, iBinder: IBinder) {
         locationService = (iBinder as MyLocationService.MyBinder).service
         locationService.setCallBack(this)
+        if (locationService.isTracking()) {
+            setRunning(locationService.getStartTime())
+        }
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
@@ -389,26 +386,32 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 //        }
 //    }
 
-    private fun startTracking() {
+    private fun startService() {
         val intent = Intent(context, MyLocationService::class.java)
         activity!!.startService(intent)
-        doBindService()
+    }
+
+    private fun startTracking() {
+        setRunning(System.currentTimeMillis())
+        locationService.setCallBack(this)
+        locationService.startLocationTracking()
+    }
+
+    private fun stopService() {
+        if (bound) {
+            doUnbindService()
+        }
+        val intent = Intent(context, MyLocationService::class.java)
+        activity!!.stopService(intent)
     }
 
     private fun stopTracking() {
-        if (bound) {
-            val intent = Intent(context, MyLocationService::class.java)
-            doUnbindService()
-            activity!!.stopService(intent)
-        }
+        handler.removeCallbacks(updateStatsRunnable)
+        running = false
+        locationService.stopLocationTracking()
     }
 
     private fun doBindService() {
-        // Establish a connection with the service.  We use an explicit
-        // class name because we want a specific service implementation
-        // that we know will be running in our own process (and thus
-        // won't be supporting component replacement by other
-        // applications).
         activity!!.bindService(Intent(context, MyLocationService::class.java), this@NewTripFragment, Context.BIND_AUTO_CREATE)
         bound = true
     }
@@ -416,6 +419,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     private fun doUnbindService() {
         if (bound) {
             // Detach our existing connection.
+            locationService.setCallBack(null)
             activity!!.unbindService(this@NewTripFragment)
             bound = false
         }
