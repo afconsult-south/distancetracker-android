@@ -15,7 +15,17 @@
     <string name="notification_trip_name">Notifiering vid resa</string>
     <string name="notification_trip_desc">En sticky notifiering visas under tiden som kör</string>
 
+    <string name="notification_title">En resa har pågår</string>
+    <string name="notification_desc">Klicka för att stoppa</string>
     <string name="btn_stop">Stoppa resa</string>
     <string name="btn_start">Starta resa</string>
     <string name="btn_save">Spara resa</string>
+
+    <string name="dialog_permissions_title">Rättigheter</string>
+    <string name="dialog_permissions_desc">Den här appen behöver tillgång till din plats.</string>
+    <string name="dialog_permissions_btn">Tillåt</string>
+
+    <string name="dialog_location_title">Platsuppgifter</string>
+    <string name="dialog_location_desc">Din platsdelning är satt till \'AV\'. \nVar god slå på detta.</string>
+    <string name="dialog_location_btn">Platsinställningar</string>
 </resources>

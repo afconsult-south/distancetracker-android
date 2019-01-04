@@ -33,6 +33,9 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 
     private val TAG = "NewTripFragment"
 
+    private val LOCATION = "LOCATION"
+    private val PERMISSIONS = "PERMISSIONS"
+
     val PERMISSIONS_REQUEST_ALL = 1
 
     val timeS = 1000.0;
@@ -91,7 +94,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
                 }
 
                 if (!isLocationEnabled()) {
-                    showAlert("plats")
+                    showAlert(LOCATION)
                 }
             } else {
                 // STOP
@@ -226,7 +229,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     private fun checkPermissions() {
         if (ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
             ContextCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            showAlert("permissions")
+            showAlert(PERMISSIONS)
         } else {
             startTracking()
         }
@@ -265,20 +268,20 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         val message : String
         val btnText : String
 
-        if (type == "plats") {
-            title = "Platsuppgifter"
-            message = "Din platsdelning är satt till 'AV'.\n Var god slå på detta."
-            btnText = "Platsinställningar"
+        if (type == LOCATION) {
+            title = getString(R.string.dialog_location_title)
+            message = getString(R.string.dialog_location_desc)
+            btnText = getString(R.string.dialog_location_btn)
         } else {
-            title = "Rättigheter"
-            message = "Den här appen behöver tillgång till din plats."
-            btnText = "Tillåt"
+            title = getString(R.string.dialog_permissions_title)
+            message = getString(R.string.dialog_permissions_desc)
+            btnText = getString(R.string.dialog_permissions_btn)
         }
 
         val dialog = AlertDialog.Builder(context!!)
         dialog.setCancelable(false)
         dialog.setTitle(title).setMessage(message).setPositiveButton(btnText) { _, _ ->
-            if (type == "plats") {
+            if (type == LOCATION) {
                 val myIntent = Intent(Settings.ACTION_LOCALE_SETTINGS)
                 startActivity(myIntent)
             } else {
@@ -302,6 +305,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         val item = menu!!.findItem(R.id.spinner)
         val spinner = item.actionView as Spinner
 
+        // TODO
         var vehicles = arrayOf("ABC123", "DEF456", "GHI789")
         vehicles += "Lägg till..."
 

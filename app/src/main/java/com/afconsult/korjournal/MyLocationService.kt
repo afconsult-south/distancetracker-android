@@ -2,6 +2,7 @@ package com.afconsult.korjournal
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -16,6 +17,7 @@ import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.TaskStackBuilder
 import com.google.android.gms.maps.model.LatLng
 import java.util.ArrayList
 
@@ -133,7 +135,6 @@ class MyLocationService : Service() {
                 Log.d(TAG, "Shutting down: " + mLocationListeners[i])
                 mLocationManager.removeUpdates(mLocationListeners[i])
             } catch (ex: Exception) {
-                Toast.makeText(this, "Failed to remove location listeners.", Toast.LENGTH_SHORT).show()
                 Log.e(TAG, "Failed to remove location listeners, ignore", ex)
             }
         }
@@ -150,18 +151,28 @@ class MyLocationService : Service() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun showNotification() {
+        // Create an Intent for the activity you want to start
+        val resultIntent = Intent(this, MainActivity::class.java)
+        // Create the TaskStackBuilder
+        val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+            // Add the intent, which inflates the back stack
+            addNextIntentWithParentStack(resultIntent)
+            // Get the PendingIntent containing the entire back stack
+            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+
         val notification = androidx.core.app.NotificationCompat.Builder(this@MyLocationService, CHANNEL_ID)
-            .setContentTitle("En resa har startat")
-            .setContentText("Stoppa resan här:")
+            .setContentTitle(getString(R.string.notification_title))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setSmallIcon(R.drawable.ic_vehicle)
             .setChannelId(CHANNEL_ID)
             .setOngoing(true)
-            .addAction(R.drawable.ic_stop, "Stoppa", null) // #0
-            .setStyle(
-                androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(0 /* #0: stop button \*/)
-                    .setMediaSession(null))
+            .setContentIntent(resultPendingIntent)
+//            .addAction(R.drawable.ic_stop, "Stoppa", null) // #0
+//            .setStyle(
+//                androidx.media.app.NotificationCompat.MediaStyle()
+//                    .setShowActionsInCompactView(0 /* #0: stop button \*/)
+//                    .setMediaSession(null))
             .build()
 
         notificationManager?.notify(NOTIFICATION_ID, notification)
