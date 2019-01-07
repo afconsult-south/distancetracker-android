@@ -84,9 +84,8 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         startButton.setOnClickListener {
             resetButton.isEnabled = true
 
-            if (!running) {
+            if (!running && points.isEmpty()) {
                 // START
-
                 if (Build.VERSION.SDK_INT >= 23) {
                     checkPermissions()
                 } else {
@@ -102,6 +101,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
                 handler.removeCallbacks(updateStatsRunnable)
 
                 stopTracking()
+                onServiceLocationUpdate(locationService.getCoordinates(), locationService.getTimeStamps())
                 showSaveTripDialog()
             }
         }
@@ -146,8 +146,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         startButton.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_stop, 0, 0, 0)
 
         startTime = time
-        handler.postDelayed(updateStatsRunnable, 0)
-
+        handler.postDelayed(updateStatsRunnable, 500)
     }
 
     private fun reset() {
@@ -337,9 +336,9 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         bound = false
     }
 
-    override fun onServiceLocationUpdate(locationPoints: MutableList<LatLng>, timestamps: MutableList<Long>) {
-        Log.e(TAG, "onLocationChanged: ${locationPoints.last()}")
-        points = locationPoints;
+    override fun onServiceLocationUpdate(coordinates: MutableList<LatLng>, timestamps: MutableList<Long>) {
+        Log.e(TAG, "onLocationChanged: ${coordinates.last()}")
+        points = coordinates;
 
         banner.visibility = View.INVISIBLE
 

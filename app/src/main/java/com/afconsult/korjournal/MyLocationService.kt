@@ -183,6 +183,14 @@ class MyLocationService : Service() {
         notificationManager?.cancel(NOTIFICATION_ID)
     }
 
+    fun getCoordinates(): MutableList<LatLng> {
+        return coordinates
+    }
+
+    fun getTimeStamps(): MutableList<Long> {
+        return timestamps
+    }
+
 //    @RequiresApi(Build.VERSION_CODES.O)
 //    private fun isNotificationShowing() : Boolean{
 //        return notificationManager?.activeNotifications.isNullOrEmpty()
