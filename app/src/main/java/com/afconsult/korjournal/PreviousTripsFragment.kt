@@ -12,7 +12,6 @@ import com.afconsult.korjournal.database.TripsDataBase
 import com.afconsult.korjournal.tasks.DeleteTripTask
 import kotlinx.android.synthetic.main.fragment_previous_trips.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 class PreviousTripsFragment : Fragment(), TripAdapter.OnTripClickListener, DeleteTripTask.DeleteCallback {
     private val mUiHandler = Handler()
@@ -75,10 +74,7 @@ class PreviousTripsFragment : Fragment(), TripAdapter.OnTripClickListener, Delet
     }
 
     private fun showDeleteAllTripsDialog() {
-        val ids : ArrayList<Long> = ArrayList()
-        for (trip in mTripsData) {
-            ids.add(trip.id!!)
-        }
+        val ids = mTripsData.map { it.id!! }
         val okClickListener = DialogInterface.OnClickListener { dialog, which ->
             DeleteTripTask(
                 TripsDataBase.getInstance(context!!),

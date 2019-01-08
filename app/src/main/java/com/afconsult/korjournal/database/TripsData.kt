@@ -19,7 +19,7 @@ data class TripsData(
     @ColumnInfo(name = "departure") var departure: String,
     @ColumnInfo(name = "destination") var destination: String,
 
-    @ColumnInfo(name = "vehicle_name") var vehicleName: String,
+    @ColumnInfo(name = "vehicle_reg") var vehicleReg: String,
     @ColumnInfo(name = "vehicle_type") var vehicleType: String,
 
     @ColumnInfo(name = "notes") var notes: String?
@@ -40,7 +40,7 @@ data class TripsData(
                 "$destination;" +
                 "$vehicleType;" +
                 getDistanceString() + ";" +
-                "$vehicleName;" +
+                "$vehicleReg;" +
                 "$notes"
     }
 }

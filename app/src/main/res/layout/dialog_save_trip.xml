@@ -9,7 +9,7 @@
     <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Startplats">
+            android:hint="@string/departure">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/departureEditText"
@@ -24,7 +24,7 @@
     <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Resmål">
+            android:hint="@string/destination">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/destinationEditText"
@@ -38,15 +38,15 @@
 
     <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:hint="@string/notes">
 
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/noteEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:imeOptions="actionDone"
-                android:hint="Anteckning"/>
+                android:imeOptions="actionDone"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 

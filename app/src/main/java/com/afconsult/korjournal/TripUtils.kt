@@ -7,14 +7,23 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.location.Geocoder
 import android.net.Uri
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.Spinner
+import android.widget.Switch
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import com.afconsult.korjournal.database.TripsData
+import com.afconsult.korjournal.database.TripsDataBase
+import com.afconsult.korjournal.database.VehicleData
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.textfield.TextInputLayout
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,13 +38,18 @@ object TripUtils {
         showSaveEditTripDialog(context, tripsData, "Spara resa", okClickListener)
     }
 
-    private fun showSaveEditTripDialog(context: Context, tripsData: TripsData, title: String, okClickListener: DialogInterface.OnClickListener) {
+    private fun showSaveEditTripDialog(
+        context: Context,
+        tripsData: TripsData,
+        title: String,
+        okClickListener: DialogInterface.OnClickListener
+    ) {
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_save_trip, null)
         val departureEditText = view.findViewById(R.id.departureEditText) as EditText
         val destinationEditText = view.findViewById(R.id.destinationEditText) as EditText
 
         val noteEditText = view.findViewById(R.id.noteEditText) as EditText
-        val builder = androidx.appcompat.app.AlertDialog.Builder(context!!)
+        val builder = androidx.appcompat.app.AlertDialog.Builder(context)
         builder.setTitle(title)
         builder.setView(view)
 
@@ -61,7 +75,7 @@ object TripUtils {
 
     fun showDeleteTripDialog(context: Context, date: String, okClickListener: DialogInterface.OnClickListener) {
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_save_trip, null)
-        val builder = androidx.appcompat.app.AlertDialog.Builder(context!!)
+        val builder = androidx.appcompat.app.AlertDialog.Builder(context)
         builder.setTitle("Radera resa")
         builder.setMessage("Vill du radera resan från $date")
 
@@ -70,6 +84,75 @@ object TripUtils {
             dialog.cancel()
         }
         builder.show()
+    }
+
+    fun showAddVehicleDialog(context: Context) {
+        val view = LayoutInflater.from(context).inflate(R.layout.dialog_new_vehicle, null)
+        val builder = androidx.appcompat.app.AlertDialog.Builder(context)
+        builder.setTitle(R.string.title_new_vehicle)
+
+        val regnrEditText = view.findViewById(R.id.regnrEditText) as EditText
+        val vehicleTypeSpinner = view.findViewById(R.id.vehicleTypeSpinner) as Spinner
+        val privateSwitch = view.findViewById(R.id.privateSwitch) as Switch
+        val nameEditText = view.findViewById(R.id.nameEditText) as EditText
+        val noteEditText = view.findViewById(R.id.noteEditText) as EditText
+
+        val adapter =
+            ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, arrayOf("F01", "F02", "F03", "F04"))
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        vehicleTypeSpinner.adapter = adapter
+        vehicleTypeSpinner.setSelection(0)
+
+        builder.setView(view)
+        builder.setCancelable(false)
+
+        // set up the ok button
+        builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
+            val regNbr = regnrEditText.text.toString().trim()
+            var isValid = true
+            if (regNbr.isBlank()) {
+                regnrEditText.error = context.getString(R.string.validation_empty)
+                isValid = false
+            }
+
+            if (isValid) {
+                val vehicleData = VehicleData(
+                    regNbr,
+                    vehicleTypeSpinner.selectedItem.toString(),
+                    nameEditText.text.toString(),
+                    noteEditText.text.toString(),
+                    privateSwitch.isChecked
+                )
+                TripsDataBase.getInstance(context).vehicleDataDao().insert(vehicleData)
+
+                dialog.dismiss()
+            }
+
+        }
+
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.cancel()
+        }
+
+        val dialog = builder.create()
+
+        dialog.show()
+
+        val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        okButton.isEnabled = false
+
+        regnrEditText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                okButton.isEnabled = s.toString().length == 6
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+        })
     }
 
     fun exportToMail(activity: FragmentActivity, trips: List<TripsData>) {
@@ -87,22 +170,27 @@ object TripUtils {
     }
 
     /**
-    * Address lookup of coords
-    *
-    * @return Address string, or empty string if null
-    */
-    fun getAddress(context: Context, latLan : LatLng) : String {
-        val geocoder = Geocoder(context, Locale.getDefault());
+     * Address lookup of coords
+     *
+     * @return Address string, or empty string if null
+     */
+    fun getAddress(context: Context, latLan: LatLng): String {
+        val geocoder = Geocoder(context, Locale.getDefault())
         var retVal = ""
 
         try {
 
-            val addresses = geocoder.getFromLocation(latLan.latitude, latLan.longitude, 1) // Here 1 represent max location result to returned, by documents it recommended 1 to 5
+            val addresses = geocoder.getFromLocation(
+                latLan.latitude,
+                latLan.longitude,
+                1
+            ) // Here 1 represent max location result to returned, by documents it recommended 1 to 5
             val firstAddress = addresses.get(0)
 
-            val knownName = firstAddress.getFeatureName(); // Only if available else return NULL
-            val address = firstAddress.getAddressLine(0)// If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
-            val city = firstAddress.getLocality();
+            val knownName = firstAddress.featureName // Only if available else return NULL
+            val address =
+                firstAddress.getAddressLine(0)// If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+            val city = firstAddress.locality
             //String state = addresses.get(0).getAdminArea();
             //String country = addresses.get(0).getCountryName();
             //String postalCode = addresses.get(0).getPostalCode();
@@ -118,17 +206,17 @@ object TripUtils {
         return retVal
     }
 
-    fun formatDateTime(date: Date) : String {
+    fun formatDateTime(date: Date): String {
         val dateFormat = SimpleDateFormat("yyy-MM-dd, HH:mm", Locale.getDefault())
         return dateFormat.format(date)
     }
 
-    fun formatDate(date: Date) : String {
+    fun formatDate(date: Date): String {
         val dateFormat = SimpleDateFormat("yyy-MM-dd", Locale.getDefault())
         return dateFormat.format(date)
     }
 
-    fun formatTime(date: Date) : String {
+    fun formatTime(date: Date): String {
         val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
         return dateFormat.format(date)
     }

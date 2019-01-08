@@ -211,7 +211,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         tripsData.start = startTime
         tripsData.end = startTime + duration
         tripsData.distance = distance
-        tripsData.vehicleName = mVehicleName
+        tripsData.vehicleReg = mVehicleName
 
         val okClickListener = DialogInterface.OnClickListener { dialog, _ ->
             InsertTripTask(TripsDataBase.getInstance(context!!), tripsData, points, this)
@@ -301,12 +301,13 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     override fun onCreateOptionsMenu(menu: Menu?, menuInflater: MenuInflater?) {
         menuInflater!!.inflate(R.menu.menu_new_trip, menu)
 
+        val ADD_VEHICLE = "Lägg till..."
+
         val item = menu!!.findItem(R.id.spinner)
         val spinner = item.actionView as Spinner
 
-        // TODO
-        var vehicles = arrayOf("ABC123", "DEF456", "GHI789")
-        vehicles += "Lägg till..."
+        var vehicles = TripsDataBase.getInstance(context!!).vehicleDataDao().getAllVehicles().map { it.reg }
+        vehicles += ADD_VEHICLE
 
         val adapter = ArrayAdapter<String>(context, R.layout.vehicle_spinner, vehicles)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -317,7 +318,14 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
             }
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                mVehicleName = (view as TextView).text.toString()
+                val itemString = (view as TextView).text.toString()
+                if (itemString == ADD_VEHICLE) {
+                    TripUtils.showAddVehicleDialog(context!!)
+                    // TODO Auto-select vehicle once added. Fallback on prev vehicle
+                    spinner.setSelection(0)
+                } else {
+                    mVehicleName = itemString
+                }
             }
         }
         super.onCreateOptionsMenu(menu, menuInflater)

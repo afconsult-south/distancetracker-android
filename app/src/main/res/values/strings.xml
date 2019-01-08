@@ -28,4 +28,13 @@
     <string name="dialog_location_title">Platsuppgifter</string>
     <string name="dialog_location_desc">Din platsdelning är satt till \'AV\'. \nVar god slå på detta.</string>
     <string name="dialog_location_btn">Platsinställningar</string>
+    <string name="departure">Startplats</string>
+    <string name="destination">Resmål</string>
+    <string name="notes">Anteckning</string>
+    <string name="reg_nr">Reg. nr</string>
+    <string name="name">Namn</string>
+    <string name="vehicle_type">Fordonstyp</string>
+    <string name="private_vehicle">Privat fordon</string>
+    <string name="validation_empty">Fältet får inte vara tomt</string>
+    <string name="title_new_vehicle">Nytt fordon</string>
 </resources>

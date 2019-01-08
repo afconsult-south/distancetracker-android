@@ -30,7 +30,7 @@ class TripAdapter(val items: List<TripsData>, val context: FragmentActivity?, pr
     // Binds each trip in the ArrayList to a view
     override fun onBindViewHolder(holder: TripAdapter.TripViewHolder, position: Int) {
         holder.date.text = TripUtils.formatDate(Date(items.get(position).start!!))
-        holder.regNumber.text = items.get(position).vehicleName
+        holder.regNumber.text = items.get(position).vehicleReg
 
 
         holder.departure.text = items.get(position).departure
