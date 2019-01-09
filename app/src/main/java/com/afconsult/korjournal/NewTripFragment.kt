@@ -15,6 +15,7 @@ import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import com.afconsult.korjournal.database.TripsData
 import com.afconsult.korjournal.database.TripsDataBase
 import com.afconsult.korjournal.tasks.InsertTripTask
@@ -26,6 +27,8 @@ import com.google.android.gms.maps.model.*
 import kotlinx.android.synthetic.main.fragment_new_trip.*
 import java.util.*
 import android.content.Intent
+import androidx.lifecycle.ViewModelProviders
+import com.afconsult.korjournal.database.TripsViewModel
 
 class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCallback, MyLocationService.CallBack, ServiceConnection {
     lateinit var locationService: MyLocationService
@@ -69,6 +72,8 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 
     private lateinit var locationManager : LocationManager
 
+    private lateinit var tripsViewModel: TripsViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -80,6 +85,8 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         super.onViewCreated(view, savedInstanceState)
 
         startService();
+
+        tripsViewModel = ViewModelProviders.of(this).get(TripsViewModel::class.java)
 
         startButton.setOnClickListener {
             resetButton.isEnabled = true
@@ -205,8 +212,8 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 
         val tripsData = TripsData()
         if (points.isNotEmpty()) {
-//            tripsData.departure = TripUtils.getAddress(context!!, points.first())
-//            tripsData.destination = TripUtils.getAddress(context!!, points.last())
+            tripsData.departure = TripUtils.getAddress(context!!, points.first())
+            tripsData.destination = TripUtils.getAddress(context!!, points.last())
         }
         tripsData.start = startTime
         tripsData.end = startTime + duration
@@ -298,21 +305,21 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         return results[0].toDouble()/1000
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, menuInflater: MenuInflater?) {
-        menuInflater!!.inflate(R.menu.menu_new_trip, menu)
+    override fun onCreateOptionsMenu(menu: Menu?, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.menu_new_trip, menu)
 
         val ADD_VEHICLE = "Lägg till..."
 
         val item = menu!!.findItem(R.id.spinner)
         val spinner = item.actionView as Spinner
 
-        var vehicles = TripsDataBase.getInstance(context!!).vehicleDataDao().getAllVehicles().map { it.reg }
-        vehicles += ADD_VEHICLE
+        tripsViewModel.getAllVehicles().observe(this, Observer { list ->
+            val vehicles = list.map { it.reg } + ADD_VEHICLE
+            val adapter = ArrayAdapter<String>(context, R.layout.vehicle_spinner, vehicles)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinner.adapter = adapter
+        })
 
-        val adapter = ArrayAdapter<String>(context, R.layout.vehicle_spinner, vehicles)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        spinner.adapter = adapter
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
@@ -320,7 +327,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val itemString = (view as TextView).text.toString()
                 if (itemString == ADD_VEHICLE) {
-                    TripUtils.showAddVehicleDialog(context!!)
+                    TripUtils.showAddVehicleDialog(context!!, tripsViewModel)
                     // TODO Auto-select vehicle once added. Fallback on prev vehicle
                     spinner.setSelection(0)
                 } else {
@@ -379,23 +386,6 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
             }
         }
     }
-
-//    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-//        return when (item!!.itemId) {
-//            R.id.action_service -> {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                    if (!bound) {
-//                        startTracking()
-//                    }
-//                    else {
-//                        stopTracking()
-//                    }
-//                }
-//                true
-//            }
-//            else -> super.onOptionsItemSelected(item)
-//        }
-//    }
 
     private fun startService() {
         val intent = Intent(context, MyLocationService::class.java)

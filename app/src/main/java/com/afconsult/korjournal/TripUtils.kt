@@ -17,13 +17,14 @@ import android.widget.Switch
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModelProviders
 import com.afconsult.korjournal.database.TripsData
 import com.afconsult.korjournal.database.TripsDataBase
+import com.afconsult.korjournal.database.TripsViewModel
 import com.afconsult.korjournal.database.VehicleData
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.textfield.TextInputLayout
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -86,7 +87,10 @@ object TripUtils {
         builder.show()
     }
 
-    fun showAddVehicleDialog(context: Context) {
+    fun showAddVehicleDialog(
+        context: Context,
+        tripsViewModel: TripsViewModel
+    ) {
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_new_vehicle, null)
         val builder = androidx.appcompat.app.AlertDialog.Builder(context)
         builder.setTitle(R.string.title_new_vehicle)
@@ -124,7 +128,8 @@ object TripUtils {
                     noteEditText.text.toString(),
                     privateSwitch.isChecked
                 )
-                TripsDataBase.getInstance(context).vehicleDataDao().insert(vehicleData)
+
+                tripsViewModel.insertVehicle(vehicleData)
 
                 dialog.dismiss()
             }
