@@ -44,9 +44,6 @@
             </intent-filter>
         </activity>
         <activity
-                android:name=".MapsActivity"
-                android:screenOrientation="portrait"/>
-        <activity
                 android:name=".TripDetailsActivity"
                 android:label="@string/title_activity_trip_details"
                 android:theme="@style/AppTheme">

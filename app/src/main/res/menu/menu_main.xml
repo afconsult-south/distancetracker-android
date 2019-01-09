@@ -7,11 +7,6 @@
           android:orderInCategory="100"
           android:visible="false"
           app:showAsAction="never"/>
-    <item android:id="@+id/action_map"
-          android:title="@string/action_map"
-          android:visible="false"
-          android:orderInCategory="100"
-          app:showAsAction="ifRoom"/>
     <!--<item android:id="@+id/action_service"-->
           <!--android:title="Notifiering"-->
           <!--android:visible="true"-->
