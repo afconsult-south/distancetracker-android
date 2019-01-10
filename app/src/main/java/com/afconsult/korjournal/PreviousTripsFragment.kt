@@ -7,9 +7,11 @@ import android.view.*
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.afconsult.korjournal.adapters.TripAdapter
 import com.afconsult.korjournal.database.TripsData
 import com.afconsult.korjournal.database.TripsDataBase
 import com.afconsult.korjournal.tasks.DeleteTripTask
+import com.afconsult.korjournal.utils.TripUtils
 import kotlinx.android.synthetic.main.fragment_previous_trips.*
 import java.util.*
 
@@ -43,15 +45,15 @@ class PreviousTripsFragment : Fragment(), TripAdapter.OnTripClickListener, Delet
                 if (mTripsData == null || mTripsData.size == 0) {
                     Toast.makeText(context, "Database empty!!", Toast.LENGTH_SHORT).show()
                 } else {
-                    recyclerView.adapter = TripAdapter(mTripsData, activity, this as TripAdapter.OnTripClickListener)
+                    recyclerView.adapter = TripAdapter(
+                        mTripsData,
+                        activity,
+                        this as TripAdapter.OnTripClickListener
+                    )
                 }
             }
         }
         (activity as? MainActivity)!!.mDbWorkerThread.postTask(task)
-    }
-
-    override fun onTripClick(trip: TripsData) {
-        startActivity(TripDetailsActivity.newInstance(context, trip.id))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, menuInflater: MenuInflater?) {
@@ -83,6 +85,10 @@ class PreviousTripsFragment : Fragment(), TripAdapter.OnTripClickListener, Delet
             dialog.dismiss()
         }
         TripUtils.showDeleteTripDialog(context!!, "ALLA", okClickListener)
+    }
+
+    override fun onTripClick(trip: TripsData) {
+        startActivity(TripDetailsActivity.newInstance(context, trip.id))
     }
 
     override fun onTripLongClick(trip: TripsData) {

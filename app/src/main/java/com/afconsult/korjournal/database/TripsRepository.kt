@@ -31,12 +31,17 @@ class TripsRepository(application: Application) {
     // suspend function so the caller methods know this.
     // Like this, Room ensures that you're not doing any long running operations on the main
     // thread, blocking the UI.
-    // TODO run on workethread
+    // TODO run on workerthread
 //    @Suppress("RedundantSuspendModifier")
 //    @WorkerThread
     fun insertVehicle(vehicleData: VehicleData) {
         vehicleDataDao.insert(vehicleData)
     }
+
+    fun deleteVehicle(vehicleData: VehicleData) {
+        vehicleDataDao.delete(vehicleData)
+    }
+
 
     fun getAllVehicles(): LiveData<List<VehicleData>> {
         return allVehicles

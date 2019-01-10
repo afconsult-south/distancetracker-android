@@ -46,8 +46,11 @@
         <activity
                 android:name=".TripDetailsActivity"
                 android:label="@string/title_activity_trip_details"
-                android:theme="@style/AppTheme">
-        </activity>
+                android:theme="@style/AppTheme" />
+        <activity
+                android:name=".VehiclesActivity"
+                android:label="@string/title_activity_vehicles" />
+
         <service
                 android:name=".MyLocationService"
                 android:enabled="true"

@@ -6,7 +6,7 @@ import com.afconsult.korjournal.database.DbWorkerThread
 import com.afconsult.korjournal.database.TripsDataBase
 
 
-class MyApp : Application() {
+class MyApplication : Application() {
 
 
     private lateinit var mDbWorkerThread: DbWorkerThread
@@ -17,7 +17,7 @@ class MyApp : Application() {
 //
     override fun onCreate() {
         super.onCreate()
-//        MyApp.database = Room.databaseBuilder(this, TripsDataBase::class.java, "MyDatabase").build()
+//        MyApplication.database = Room.databaseBuilder(this, TripsDataBase::class.java, "MyDatabase").build()
 
         mDbWorkerThread = DbWorkerThread("dbWorkerThread")
         mDbWorkerThread.start()

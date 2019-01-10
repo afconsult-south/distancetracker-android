@@ -46,7 +46,7 @@ class MyLocationService : Service() {
         arrayOf(LocationListener(LocationManager.GPS_PROVIDER) /*, LocationListener(LocationManager.NETWORK_PROVIDER) */
         )
 
-    // Callback Interface
+    // Callback interface
     interface CallBack {
         fun onServiceLocationUpdate(
             locationPoints: MutableList<LatLng>,
@@ -190,11 +190,6 @@ class MyLocationService : Service() {
     fun getTimeStamps(): MutableList<Long> {
         return timestamps
     }
-
-//    @RequiresApi(Build.VERSION_CODES.O)
-//    private fun isNotificationShowing() : Boolean{
-//        return notificationManager?.activeNotifications.isNullOrEmpty()
-//    }
 
     private inner class LocationListener(provider: String) : android.location.LocationListener {
         internal var mLastLocation: Location

@@ -1,4 +1,4 @@
-package com.afconsult.korjournal
+package com.afconsult.korjournal.utils
 
 import android.content.Context
 import android.content.DialogInterface
@@ -8,6 +8,7 @@ import android.graphics.Canvas
 import android.location.Geocoder
 import android.net.Uri
 import android.text.Editable
+import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
@@ -17,9 +18,8 @@ import android.widget.Switch
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModelProviders
+import com.afconsult.korjournal.R
 import com.afconsult.korjournal.database.TripsData
-import com.afconsult.korjournal.database.TripsDataBase
 import com.afconsult.korjournal.database.TripsViewModel
 import com.afconsult.korjournal.database.VehicleData
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -32,11 +32,11 @@ import java.util.*
 object TripUtils {
 
     fun showEditTripDialog(context: Context, tripsData: TripsData, okClickListener: DialogInterface.OnClickListener) {
-        showSaveEditTripDialog(context, tripsData, "Ändra resa", okClickListener)
+        showSaveEditTripDialog(context, tripsData, "Ändra resa", okClickListener )
     }
 
     fun showSaveTripDialog(context: Context, tripsData: TripsData, okClickListener: DialogInterface.OnClickListener) {
-        showSaveEditTripDialog(context, tripsData, "Spara resa", okClickListener)
+        showSaveEditTripDialog(context, tripsData, "Spara resa", okClickListener )
     }
 
     private fun showSaveEditTripDialog(
@@ -49,7 +49,7 @@ object TripUtils {
         val departureEditText = view.findViewById(R.id.departureEditText) as EditText
         val destinationEditText = view.findViewById(R.id.destinationEditText) as EditText
 
-        val noteEditText = view.findViewById(R.id.noteEditText) as EditText
+        val noteEditText = view.findViewById(R.id.notesEditText) as EditText
         val builder = androidx.appcompat.app.AlertDialog.Builder(context)
         builder.setTitle(title)
         builder.setView(view)
@@ -87,10 +87,7 @@ object TripUtils {
         builder.show()
     }
 
-    fun showAddVehicleDialog(
-        context: Context,
-        tripsViewModel: TripsViewModel
-    ) {
+    fun showAddEditVehicleDialog( context: Context, oldVehicleData: VehicleData?, tripsViewModel: TripsViewModel) {
         val view = LayoutInflater.from(context).inflate(R.layout.dialog_new_vehicle, null)
         val builder = androidx.appcompat.app.AlertDialog.Builder(context)
         builder.setTitle(R.string.title_new_vehicle)
@@ -99,14 +96,25 @@ object TripUtils {
         val vehicleTypeSpinner = view.findViewById(R.id.vehicleTypeSpinner) as Spinner
         val privateSwitch = view.findViewById(R.id.privateSwitch) as Switch
         val nameEditText = view.findViewById(R.id.nameEditText) as EditText
-        val noteEditText = view.findViewById(R.id.noteEditText) as EditText
+        val notesEditText = view.findViewById(R.id.notesEditText) as EditText
 
         val adapter =
             ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, arrayOf("F01", "F02", "F03", "F04"))
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         vehicleTypeSpinner.adapter = adapter
-        vehicleTypeSpinner.setSelection(0)
+
+        if(oldVehicleData != null) {
+            regnrEditText.setText(oldVehicleData.reg)
+            vehicleTypeSpinner.setSelection(adapter.getPosition(oldVehicleData.vehicleType))
+            privateSwitch.isChecked = oldVehicleData.privateVehicle
+            nameEditText.setText(oldVehicleData.name)
+            notesEditText.setText(oldVehicleData.notes)
+            regnrEditText.isEnabled = false
+        } else {
+            vehicleTypeSpinner.setSelection(0)
+            regnrEditText.filters = arrayOf(InputFilter.AllCaps())
+        }
 
         builder.setView(view)
         builder.setCancelable(false)
@@ -121,15 +129,15 @@ object TripUtils {
             }
 
             if (isValid) {
-                val vehicleData = VehicleData(
+                val newVehicleData = VehicleData(
                     regNbr,
                     vehicleTypeSpinner.selectedItem.toString(),
                     nameEditText.text.toString(),
-                    noteEditText.text.toString(),
+                    notesEditText.text.toString(),
                     privateSwitch.isChecked
                 )
 
-                tripsViewModel.insertVehicle(vehicleData)
+                tripsViewModel.insertVehicle(newVehicleData)
 
                 dialog.dismiss()
             }
@@ -144,20 +152,41 @@ object TripUtils {
 
         dialog.show()
 
-        val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-        okButton.isEnabled = false
+        if(oldVehicleData == null) {
+            val okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            okButton.isEnabled = false
 
-        regnrEditText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                okButton.isEnabled = s.toString().length == 6
-            }
+            regnrEditText.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    okButton.isEnabled = s.toString().length == 6
+                }
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-            }
-        })
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                }
+            })
+        }
+    }
+
+    fun showDeleteVehicleDialog(
+        context: Context,
+        vehicle: VehicleData,
+        tripsViewModel: TripsViewModel
+    ) {
+        val view = LayoutInflater.from(context).inflate(R.layout.dialog_save_trip, null)
+        val builder = androidx.appcompat.app.AlertDialog.Builder(context)
+        builder.setTitle("Radera fordon")
+        builder.setMessage("Vill du fordon med reg.nr. ${vehicle.reg}")
+
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
+            tripsViewModel.deleteVehicle(vehicle)
+        }
+        builder.setNegativeButton(android.R.string.cancel) { dialog, p1 ->
+            dialog.cancel()
+        }
+        builder.show()
     }
 
     fun exportToMail(activity: FragmentActivity, trips: List<TripsData>) {

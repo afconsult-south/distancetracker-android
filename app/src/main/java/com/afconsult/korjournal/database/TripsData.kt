@@ -3,7 +3,7 @@ package com.afconsult.korjournal.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.afconsult.korjournal.TripUtils
+import com.afconsult.korjournal.utils.TripUtils
 import java.text.DecimalFormat
 import java.util.*
 

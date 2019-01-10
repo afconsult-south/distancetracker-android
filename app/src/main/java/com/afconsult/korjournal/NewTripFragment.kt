@@ -29,6 +29,7 @@ import java.util.*
 import android.content.Intent
 import androidx.lifecycle.ViewModelProviders
 import com.afconsult.korjournal.database.TripsViewModel
+import com.afconsult.korjournal.utils.TripUtils
 
 class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCallback, MyLocationService.CallBack, ServiceConnection {
     lateinit var locationService: MyLocationService
@@ -64,7 +65,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     private lateinit var mMap: GoogleMap
     private var mPolyline : Polyline? = null
 
-    private lateinit var mVehicleName : String
+    private var mVehicleName : String? = null
     private lateinit var mo : MarkerOptions
     private lateinit var marker : Marker
     private var points : MutableList<LatLng> = ArrayList<LatLng>()
@@ -73,6 +74,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     private lateinit var locationManager : LocationManager
 
     private lateinit var tripsViewModel: TripsViewModel
+    private lateinit var vehicleSpinnerItem: MenuItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,7 +105,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
                     showAlert(LOCATION)
                 }
             } else {
-                // STOP
+                // STOP and SAVE
                 duration += millisecondTime
                 handler.removeCallbacks(updateStatsRunnable)
 
@@ -208,24 +210,31 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     }
 
     private fun showSaveTripDialog() {
-        startButton.text = getString(R.string.btn_save)
+        if (mVehicleName != null) {
+            val spinner = vehicleSpinnerItem.actionView as Spinner
+            if (spinner.adapter != null && !spinner.adapter.isEmpty) {
+                vehicleSpinnerItem.isVisible = true
+            }
 
-        val tripsData = TripsData()
-        if (points.isNotEmpty()) {
-            tripsData.departure = TripUtils.getAddress(context!!, points.first())
-            tripsData.destination = TripUtils.getAddress(context!!, points.last())
-        }
-        tripsData.start = startTime
-        tripsData.end = startTime + duration
-        tripsData.distance = distance
-        tripsData.vehicleReg = mVehicleName
+            val tripsData = TripsData()
+            if (points.isNotEmpty()) {
+                tripsData.departure = TripUtils.getAddress(context!!, points.first())
+                tripsData.destination = TripUtils.getAddress(context!!, points.last())
+            }
+            tripsData.start = startTime
+            tripsData.end = startTime + duration
+            tripsData.distance = distance
+            tripsData.vehicleReg = mVehicleName!!
 
-        val okClickListener = DialogInterface.OnClickListener { dialog, _ ->
-            InsertTripTask(TripsDataBase.getInstance(context!!), tripsData, points, this)
-                .execute()
-            dialog.dismiss()
+            val okClickListener = DialogInterface.OnClickListener { dialog, _ ->
+                InsertTripTask(TripsDataBase.getInstance(context!!), tripsData, points, this)
+                    .execute()
+                dialog.dismiss()
+            }
+            TripUtils.showSaveTripDialog(context!!, tripsData, okClickListener)
+        } else {
+            TripUtils.showAddEditVehicleDialog(context!!, null, tripsViewModel)
         }
-        TripUtils.showSaveTripDialog(context!!, tripsData, okClickListener)
     }
 
     override fun onInsertComplete(success: Boolean) {
@@ -308,16 +317,34 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     override fun onCreateOptionsMenu(menu: Menu?, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_new_trip, menu)
 
-        val ADD_VEHICLE = "Lägg till..."
+        val HANDLE_VEHICLES = getString(R.string.handle_vehicles)
 
-        val item = menu!!.findItem(R.id.spinner)
-        val spinner = item.actionView as Spinner
+        vehicleSpinnerItem = menu!!.findItem(R.id.spinner)
+        val spinner = vehicleSpinnerItem.actionView as Spinner
 
-        tripsViewModel.getAllVehicles().observe(this, Observer { list ->
-            val vehicles = list.map { it.reg } + ADD_VEHICLE
-            val adapter = ArrayAdapter<String>(context, R.layout.vehicle_spinner, vehicles)
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            spinner.adapter = adapter
+        tripsViewModel.getAllVehicles().observe(this, Observer { vehicleItems ->
+            var vehicles = vehicleItems.map { it.reg }
+            if (vehicles.isNotEmpty()) {
+                if(!running && points.isNotEmpty() && vehicles.size == 1) {
+                    mVehicleName = vehicles.get(0)
+
+                    // SAVE
+                    showSaveTripDialog()
+                }
+                vehicles += HANDLE_VEHICLES
+                val adapter = ArrayAdapter<String>(context, R.layout.vehicle_spinner, vehicles)
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinner.adapter = adapter
+                vehicleSpinnerItem.isVisible = true
+
+                // TODO Restore vehicle from SharedPrefs
+//                val storedVehicleReg = "asdasd"
+//                spinner.setSelection(adapter.getPosition(mVehicleName))
+
+            } else {
+                mVehicleName = null
+                vehicleSpinnerItem.isVisible = false
+            }
         })
 
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
@@ -326,12 +353,13 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
 
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 val itemString = (view as TextView).text.toString()
-                if (itemString == ADD_VEHICLE) {
-                    TripUtils.showAddVehicleDialog(context!!, tripsViewModel)
-                    // TODO Auto-select vehicle once added. Fallback on prev vehicle
-                    spinner.setSelection(0)
+                if (itemString == HANDLE_VEHICLES) {
+
+                    startActivity(Intent(context, VehiclesActivity::class.java))
+
                 } else {
                     mVehicleName = itemString
+                    // TODO Save vehicle to SharedPrefs
                 }
             }
         }
@@ -393,6 +421,7 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
     }
 
     private fun startTracking() {
+        vehicleSpinnerItem.isVisible = false
         setRunning(System.currentTimeMillis())
         locationService.setCallBack(this)
         locationService.startLocationTracking()
@@ -410,6 +439,8 @@ class NewTripFragment : Fragment(), OnMapReadyCallback, InsertTripTask.InsertCal
         handler.removeCallbacks(updateStatsRunnable)
         running = false
         locationService.stopLocationTracking()
+
+        startButton.text = getString(R.string.btn_save)
     }
 
     private fun doBindService() {

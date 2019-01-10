@@ -17,12 +17,11 @@
                 android:textColor="@color/colorPrimaryDark"
                 android:text="@string/reg_nr"/>
 
-
         <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/regnrEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nextFocusDown="@id/destinationEditText"
+                android:nextFocusDown="@id/nameEditText"
                 android:imeOptions="actionNext"
                 android:singleLine="true"/>
     </LinearLayout>
@@ -43,7 +42,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:nextFocusDown="@id/noteEditText"
+                android:nextFocusDown="@id/privateSwitch"
                 android:imeOptions="actionNext"/>
 
     </LinearLayout>
@@ -52,6 +51,7 @@
             android:text="@string/private_vehicle"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
+            android:nextFocusDown="@id/vehicleTypeSpinner"
             android:checked="false"
             android:layout_marginTop="16dp"/>
 
@@ -70,11 +70,10 @@
         <Spinner
                 android:layout_width="120dp"
                 android:layout_height="wrap_content"
+                android:nextFocusDown="@id/notesEditText"
                 android:id="@+id/vehicleTypeSpinner"/>
 
     </LinearLayout>
-
-
 
     <TextView
             android:layout_width="wrap_content"
@@ -84,7 +83,7 @@
             android:text="@string/notes"/>
 
     <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/noteEditText"
+            android:id="@+id/notesEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"

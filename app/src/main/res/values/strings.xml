@@ -8,6 +8,7 @@
     <string name="title_new_trip">Ny resa</string>
     <string name="title_previous_trips">Logg</string>
     <string name="title_activity_trip_details">Resa</string>
+    <string name="title_activity_vehicles">Fordon</string>
     <string name="empty_address">Tomt</string>
     <string name="to_label">Till:</string>
     <string name="from_label">Från:</string>
@@ -37,4 +38,5 @@
     <string name="private_vehicle">Privat fordon</string>
     <string name="validation_empty">Fältet får inte vara tomt</string>
     <string name="title_new_vehicle">Nytt fordon</string>
+    <string name="handle_vehicles">Hantera...</string>
 </resources>

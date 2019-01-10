@@ -13,6 +13,7 @@ import com.afconsult.korjournal.database.TripsDataBase
 import com.afconsult.korjournal.tasks.DeleteTripTask
 import com.afconsult.korjournal.tasks.GetTripTask
 import com.afconsult.korjournal.tasks.InsertTripTask
+import com.afconsult.korjournal.utils.TripUtils
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -41,7 +42,10 @@ class TripDetailsActivity : AppCompatActivity(), OnMapReadyCallback, GetTripTask
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_trip_details)
+
         setSupportActionBar(toolbar)
+        getSupportActionBar()!!.setDisplayHomeAsUpEnabled(true)
+        getSupportActionBar()!!.setDisplayShowHomeEnabled(true)
 
         fab.setOnClickListener { _ ->
             showEditTripDialog()

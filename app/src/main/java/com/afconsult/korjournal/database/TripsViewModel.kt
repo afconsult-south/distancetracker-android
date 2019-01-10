@@ -13,6 +13,10 @@ class TripsViewModel(application: Application) : AndroidViewModel(application) {
         repository.insertVehicle(vehicle)
     }
 
+    fun deleteVehicle(vehicle: VehicleData) {
+        repository.deleteVehicle(vehicle)
+    }
+
     fun getAllVehicles(): LiveData<List<VehicleData>> {
         return allVehicles
     }

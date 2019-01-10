@@ -1,11 +1,13 @@
-package com.afconsult.korjournal
+package com.afconsult.korjournal.adapters
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.afconsult.korjournal.TripAdapter.TripViewHolder
+import com.afconsult.korjournal.R
+import com.afconsult.korjournal.utils.TripUtils
+import com.afconsult.korjournal.adapters.TripAdapter.TripViewHolder
 import com.afconsult.korjournal.database.TripsData
 import kotlinx.android.synthetic.main.trip_list_item.view.*
 import java.util.*

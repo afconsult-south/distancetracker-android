@@ -1,4 +1,4 @@
-package com.afconsult.korjournal
+package com.afconsult.korjournal.utils
 
 
 import androidx.room.TypeConverter
