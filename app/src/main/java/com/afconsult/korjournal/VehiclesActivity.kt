@@ -1,6 +1,7 @@
 package com.afconsult.korjournal
 
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -25,7 +26,6 @@ class VehiclesActivity : AppCompatActivity(), VehicleListAdapter.OnVehicleClickL
         TripUtils.showDeleteVehicleDialog(this, vehicle, tripsViewModel)
     }
 
-    //    private val newWordActivityRequestCode = 1
     private lateinit var tripsViewModel: TripsViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +55,16 @@ class VehiclesActivity : AppCompatActivity(), VehicleListAdapter.OnVehicleClickL
         val fab = findViewById<FloatingActionButton>(R.id.fab)
         fab.setOnClickListener {
             TripUtils.showAddEditVehicleDialog(this, null, tripsViewModel)
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 

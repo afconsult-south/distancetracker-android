@@ -131,6 +131,10 @@ class TripDetailsActivity : AppCompatActivity(), OnMapReadyCallback, GetTripTask
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            android.R.id.home -> {
+                finish()
+                true
+            }
             R.id.action_export -> {
                 TripUtils.exportToMail(this, listOf(mTripData))
                 true
